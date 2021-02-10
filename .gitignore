@@ -3,7 +3,7 @@ flenv/
 *.pyc
 __pycache__/
 
-instance/
+#instance/
 
 .pytest_cache/
 .coverage
@@ -12,3 +12,4 @@ htmlcov/
 dist/
 build/
 *.egg-info/
+.DS_Store
