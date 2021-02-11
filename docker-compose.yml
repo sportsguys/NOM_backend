@@ -1,0 +1,15 @@
+version: '3.3'
+
+services:
+  db:
+    image: mysql:5.7
+    container_name: NOM_DevDB
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 'password'
+    ports:
+      - '4000:3306'
+      - '8080:80'
+    volumes:
+      - ./data:/docker-entrypoint-initdb.d
+      - ./data:/var/lib/mysql
