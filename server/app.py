@@ -1,7 +1,5 @@
 from flask import Flask
-from flask.globals import session
 import server.config as conf
-
 
 def start():
     app = Flask(__name__)

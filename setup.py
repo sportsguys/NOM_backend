@@ -9,7 +9,8 @@ setup(
         'flask',
         'sqlalchemy',
         'Click',
-        'pymysql'
+        'pymysql',
+        'minisom'
     ],
     entry_points={
         "console_scripts": [
