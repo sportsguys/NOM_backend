@@ -10,7 +10,7 @@ setup(
         'sqlalchemy',
         'Click',
         'pymysql',
-        'minisom'
+        'numpy'
     ],
     entry_points={
         "console_scripts": [
