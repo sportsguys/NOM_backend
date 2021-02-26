@@ -9,7 +9,8 @@ setup(
         'flask',
         'sqlalchemy',
         'Click',
-        'pymysql'
+        'pymysql',
+        'numpy'
     ],
     entry_points={
         "console_scripts": [
