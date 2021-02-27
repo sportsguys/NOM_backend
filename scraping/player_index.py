@@ -1,12 +1,13 @@
-from scraping.Page import Page
+from scraping.page import Page
 
 class PlayerIndex(Page):
-    def __init__(self, url, cutoff_year='2000'):
-        super(PlayerIndex, self).__init__(url)
-        self.players = self.bs.select('#div_players')
-        self.cutoff = cutoff_year
+    def __init__(self, url=None, cutoff_year='2000'):
+        if url:
+            self.load_page(url)
+            self.players = self.bs.select('#div_players')
+            self.cutoff = cutoff_year
 
-    def get_players(self):
+    def scrape_players(self):
         """ returns list of PFR-relative player urls that meet the cutoff requirement
         """
         url_list = []
