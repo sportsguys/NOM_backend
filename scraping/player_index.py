@@ -19,9 +19,11 @@ class PlayerIndex(Page):
             if career_start < self.cutoff:
                 continue
             try:
-                url_list.append(item.contents[0].attrs['href'])
+                pos = item.contents[1].split('(')[1].split(')')[0]
+                url_list.append((item.contents[0].attrs['href'], pos))
             except: # active players are wrapped in a <b> that changes contents
-                url_list.append(item.contents[0].contents[0].attrs['href'])       
+                pos = item.contents[0].contents[1].split('(')[1].split(')')[0]
+                url_list.append((item.contents[0].contents[0].attrs['href'], pos))
         return url_list
     
     

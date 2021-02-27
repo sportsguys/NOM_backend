@@ -17,25 +17,29 @@ def create_player_list():
         players.append(idx.scrape_players())
     return players
 
-
-
-engine = connect_db(config.dev.DB_URI)
-init_db(engine)
-
+#create_player_list()
 brett = QB('https://www.pro-football-reference.com/players/F/FavrBr00.htm')
 brett.ping()
-clyde = RB('https://www.pro-football-reference.com/players/E/EdwaCl00.htm')
-clyde.ping()
-jerry = WR('https://www.pro-football-reference.com/players/R/RiceJe00.htm')
-jerry.ping()
-skip = TE('https://www.pro-football-reference.com/players/S/SharSh00.htm')
 
-Session = sessionmaker(bind = engine)
-session = Session()
-brett.name = 'brett'
-clyde.name = 'clyde'
-jerry.name = 'jerry'
-session.add_all([
-    brett, clyde, jerry
-])
-session.commit()
+def test_orm():
+    engine = connect_db(config.dev.DB_URI)
+    init_db(engine)
+
+    brett = QB('https://www.pro-football-reference.com/players/F/FavrBr00.htm')
+    brett.ping()
+    clyde = RB('https://www.pro-football-reference.com/players/E/EdwaCl00.htm')
+    clyde.ping()
+    jerry = WR('https://www.pro-football-reference.com/players/R/RiceJe00.htm')
+    jerry.ping()
+    skip = TE('https://www.pro-football-reference.com/players/S/SharSh00.htm')
+
+    Session = sessionmaker(bind = engine)
+    session = Session()
+    brett.name = 'brett'
+    clyde.name = 'clyde'
+    jerry.name = 'jerry'
+    session.add_all([
+        brett, clyde, jerry
+    ])
+    session.commit()
+
