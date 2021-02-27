@@ -22,8 +22,7 @@ def get_engine() -> Engine:
     return g.db
     
 Base = declarative_base()
-def init_db():
-    engine = connect_db(config.dev.DB_URI)
+def init_db(engine):
     db_session = scoped_session(sessionmaker(autocommit=False,
                                         autoflush=False,
                                         bind=engine))

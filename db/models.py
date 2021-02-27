@@ -12,8 +12,6 @@ class player_season():
 
 class qb(Base, player_season):
     __tablename__ = 'qb'
-
-    position = Column(String)
     completions = Column(Integer)
     attempts = Column(Integer)
     completion_pct = Column(Float)
@@ -26,9 +24,9 @@ class te(Base, player_season):
 
 class wr(Base, player_season):
     __tablename__ = 'wr'
-    targets = 0
-    receptions = 0
-    yardsReceived = 0
+    targets = Column(Integer)
+    receptions = Column(Integer)
+    yardsReceived = Column(Integer)
 
 class rb(Base, player_season):
     __tablename__ = 'rb'

@@ -30,7 +30,7 @@ class QB(PlayerSeason, qb):
         self.avgYardsPerGame = self.careerTable.contents[20].string
 
     def ping(self):
-        super().ping()
+        #super().ping()
         self.set_completions()
         self.set_attempts()
         self.set_completion_pct()
@@ -40,7 +40,7 @@ class QB(PlayerSeason, qb):
 
 
 class WR(PlayerSeason, wr):
-    def __init__(self, url):
+    def __init__(self, url=None):
         super().__init__(url)
 
     def set_targets(self):
@@ -68,7 +68,7 @@ class WR(PlayerSeason, wr):
         self.avgYardsPerGame = self.careerTable.contents[14].string
 
     def ping(self):
-        super.ping()
+        #super().ping()
         self.set_targets()
         self.set_receptions()
         self.set_yards_received()
@@ -96,7 +96,7 @@ class RB(PlayerSeason, rb):
         return self.avgYardsPerRush
 
     def ping(self):
-        super.ping()
+        #super().ping()
         self.set_rushes()
         self.set_yards_rushed()
         self.set_avg_yards_per_rush()
