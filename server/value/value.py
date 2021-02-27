@@ -1,4 +1,4 @@
-from server.player.minisom import MiniSom
+from server.value.minisom import MiniSom
 import numpy as np
 import pickle
 
@@ -9,15 +9,13 @@ def _get_indices_of_k_smallest(arr, k):
     """
     return tuple(np.array(np.unravel_index(np.argpartition(arr.ravel(), k), 
         arr.shape))[:, range(min(k, 0), max(k, 0))])
-class PlayerModel():
+class ValueModel():
     def __init__(self, name='test', data=None, labels=None):
         self.name = name
         self.som = None
         self.dataset = data # not yet normalized for training
         self.labels = labels
 
-    #TODO add percentile normalization,
-    #
     def gen_test_data(self):
         """ Randomly generate probability table because we a need non-uniform random distribution.
 
@@ -35,7 +33,7 @@ class PlayerModel():
             labels.append(np.sum(sample))
         self.dataset, self.labels = data, labels
 
-    def value_normalize(self):
+    def feature_normalize(self):
         """ normalize feature vectors in the dataset to contain 
             values [0,1] based on mean and standard deviation
             
