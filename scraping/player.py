@@ -1,6 +1,7 @@
 from scraping.positions import QB, WR, RB, Defense
 from scraping.Page import Page
 from db.models import player
+
 class Player(Page, player):
     def __init__(self, name:str, url:str, position:str):
         self.name = name

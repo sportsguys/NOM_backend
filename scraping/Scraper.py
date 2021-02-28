@@ -14,6 +14,8 @@ def create_player_list():
         players.extend(idx.scrape_players())
     return players
 
+create_player_list()
+
 def test_season_orm():
     engine = connect_db(config.dev.DB_URI)
     init_db(engine)
