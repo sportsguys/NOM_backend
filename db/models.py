@@ -1,16 +1,31 @@
-from sqlalchemy.engine import base
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy.ext.declarative.api import declared_attr
+from sqlalchemy.orm import relationship
 from db.db import Base
 
-class player_season():
+class player(Base):
+    __tablename__ = 'player'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(50))
+    url = Column(String(200))
+    position = Column(String(10))
+
+class season(): # not a table
     id = Column(Integer, primary_key=True)
     td = Column(Integer)
-    name = Column(String(50))
-    year = Column(Integer)
-    years_played = Column(Integer)
+    year = Column(Integer)    
+    games = Column(Integer)
 
-class qb(Base, player_season):
+    """
+    @declared_attr
+    def player_name(cls):
+        return Column(String(50), ForeignKey(player.name))
+    @declared_attr
+    def player_relationship(cls):
+        return relationship('player')
+    """
+
+class qb(Base, season):
     __tablename__ = 'qb'
     completions = Column(Integer)
     attempts = Column(Integer)
@@ -19,16 +34,13 @@ class qb(Base, player_season):
     interceptions = Column(Integer)
     avg_yards_per_pass = Column(Float)
 
-class te(Base, player_season):
-    __tablename__ = 'te'
-
-class wr(Base, player_season):
+class wr(Base, season):
     __tablename__ = 'wr'
     targets = Column(Integer)
     receptions = Column(Integer)
     yardsReceived = Column(Integer)
 
-class rb(Base, player_season):
+class rb(Base, season):
     __tablename__ = 'rb'
     rushes = Column(Integer)
     yardsRushed = Column(Float)

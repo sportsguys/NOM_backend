@@ -9,10 +9,3 @@ class Page:
         response = requests.get(url)
         self.bs = BeautifulSoup(response.text, 'html.parser')
         
-
-
-
-
-    
-
-
