@@ -19,6 +19,7 @@ class Position():
                 setattr(self, attr, value)
 
 """ These all look the same but theyre not """
+
 class QB(qb, Position):
     def __init__(self, player_id):
         self.player_id = player_id # the foreign key to players

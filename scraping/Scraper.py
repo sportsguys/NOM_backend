@@ -19,16 +19,18 @@ def test_season_orm():
     init_db(engine)
     Session = sessionmaker(bind = engine)
     session = Session()
-    # this grabs Player objects defined in player.py
-    guys = session.query(Player).all()
+    guys = session.query(Player).all() # this grabs Player objects defined in player.py
+    session.close()
     for guy in guys:
+        session = Session() # close and remake to prevent bloating to 15GB of memory
         # create a list of seasons as defined in positions.py
         seasons = guy.get_seasons()
         session.add_all(seasons)
         session.commit()
-    session.close()
+        session.close()
 # https://media1.tenor.com/images/21e759c7b8f0a2e7b034135b11157351/tenor.gif?itemid=15435775
 # ^ you on pro football reference
+
 test_season_orm()
 
 # currently the player index returns a list of tuples with the information to create players

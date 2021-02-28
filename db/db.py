@@ -4,7 +4,6 @@ import sqlalchemy as s
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
-import config
 
 def connect_db(db_uri):
     engine = s.create_engine(db_uri)
