@@ -31,7 +31,7 @@ def test_season_orm():
 # https://media1.tenor.com/images/21e759c7b8f0a2e7b034135b11157351/tenor.gif?itemid=15435775
 # ^ you on pro football reference
 
-test_season_orm()
+#test_season_orm()
 
 # currently the player index returns a list of tuples with the information to create players
 # so the responsibility to create the list of actual player objects falls on this driver module
