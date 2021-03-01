@@ -1,105 +1,50 @@
-from scraping.player_season import PlayerSeason
-from db.models import qb, wr, te, rb
+from db.models import qb, wr, rb, defense
 
-class QB(PlayerSeason, qb):
-    def __init__(self, url=None):
-        super().__init__(url)
+do_not_scrape = ['id', 'metadata', 'player_id', 'player_relationship']
 
-    def set_completions(self):
-        self.completions = self.careerTable.contents[7].string
+class Position():
 
-    def set_attempts(self):
-        self.attempts = self.careerTable.contents[8].string
+    def get_all_row_data(self, row):
+        myattrs = dir(self.__class__.__bases__[0])
+        for attr in myattrs:
+            if not attr.startswith('__') and not attr.startswith('_') and attr not in do_not_scrape:
+                try:
+                    value = row.select_one('[data-stat={}]'.format(attr)).text
+                    value = value.replace('*','')
+                    value = value.replace('+','')
+                except:
+                    value = 0 #for now. should add logging
+                if not value:
+                    value = -1
+                setattr(self, attr, value)
 
-    def set_completion_pct(self):
-        self.completion_pct = float(self.completions)/float(self.attempts)
+""" These all look the same but theyre not """
 
-    def set_td(self):
-        self.td = self.careerTable.contents[11].string
-    
-    def set_yards_passed(self):
-        self.yardsPassed = self.careerTable.contents[10].string
+class QB(qb, Position):
+    def __init__(self, player_id):
+        self.player_id = player_id # the foreign key to players
 
-    def set_interceptions(self):
-        self.interceptions = self.careerTable.contents[13].string
+    def ping(self, row):
+        self.get_all_row_data(row)
+        
+class WR(wr, Position):
+    def __init__(self, player_id):
+        self.player_id = player_id # the foreign key to players
 
-    def set_avg_yards_per_pass(self):
-        self.avgYardsPerPass = self.careerTable.contents[17].string
+    def ping(self, row):
+        self.get_all_row_data(row)
 
-    def set_avg_yards_per_game(self):
-        self.avgYardsPerGame = self.careerTable.contents[20].string
+class RB(rb, Position):
+    def __init__(self, player_id):
+        self.player_id = player_id # the foreign key to players
 
-    def ping(self):
-        #super().ping()
-        self.set_completions()
-        self.set_attempts()
-        self.set_completion_pct()
-        self.set_yards_passed()
-        self.set_interceptions()
-        self.set_avg_yards_per_pass()
+    def ping(self, row):
+        self.get_all_row_data(row)
 
+class Defense(defense, Position):
+    def __init__(self, player_id):
+        self.player_id = player_id # the foreign key to players
 
-class WR(PlayerSeason, wr):
-    def __init__(self, url=None):
-        super().__init__(url)
+    def ping(self, row):
+        self.get_all_row_data(row)
 
-    def set_targets(self):
-        self.targets = self.careerTable.contents[6].string
-
-    def get_targets(self):
-        return self.targets 
-
-    def set_receptions(self):
-        self.receptions = self.careerTable.contents[7].string
-
-    def get_receptions(self):
-        return self.receptions
-
-    def set_yards_received(self):
-        self.yardsReceived = self.careerTable.contents[8].string
-
-    def get_yards_received(self):
-        return self.yardsReceived
-
-    def set_td(self):
-        self.td = self.careerTable.contents[10].string
-
-    def set_avg_yards_per_game(self):
-        self.avgYardsPerGame = self.careerTable.contents[14].string
-
-    def ping(self):
-        #super().ping()
-        self.set_targets()
-        self.set_receptions()
-        self.set_yards_received()
-
-class RB(PlayerSeason, rb):
-    def __init__(self, url=None):
-        super().__init__(url)
-
-    def set_rushes(self):
-        self.rushes = self.careerTable.contents[6].string
-
-    def get_rushes(self):
-        return self.rushes
-
-    def set_yards_rushed(self):
-        self.yardsRushed = self.careerTable.contents[7].string
-
-    def get_yards_rushed(self):
-        return self.yardsRushed
-
-    def set_avg_yards_per_rush(self):
-        self.avgYardsPerRush = str(float(self.yardsRushed)/float(self.rushes))
-
-    def get_avg_yards_per_rush(self):
-        return self.avgYardsPerRush
-
-    def ping(self):
-        #super().ping()
-        self.set_rushes()
-        self.set_yards_rushed()
-        self.set_avg_yards_per_rush()
-
-class TE(PlayerSeason, te):
-    pass
