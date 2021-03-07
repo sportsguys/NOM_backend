@@ -1,3 +1,4 @@
+from scraping.team_index import Team, TeamIndex
 from scraping.player import Player
 from scraping.player_index import PlayerIndex
 import string, config
@@ -14,9 +15,8 @@ def create_player_list():
         players.extend(idx.scrape_players())
     return players
 
-create_player_list()
 
-def test_season_orm():
+def test_player_season_orm():
     engine = connect_db(config.dev.DB_URI)
     init_db(engine)
     Session = sessionmaker(bind = engine)
@@ -30,10 +30,6 @@ def test_season_orm():
         session.add_all(seasons)
         session.commit()
         session.close()
-# https://media1.tenor.com/images/21e759c7b8f0a2e7b034135b11157351/tenor.gif?itemid=15435775
-# ^ you on pro football reference
-
-#test_season_orm()
 
 # currently the player index returns a list of tuples with the information to create players
 # so the responsibility to create the list of actual player objects falls on this driver module
@@ -52,3 +48,38 @@ def test_player_orm():
     session.commit()
     session.close()
 
+def test_team_orm():
+    url = 'https://www.pro-football-reference.com/teams/'
+    ti  = TeamIndex(url)
+    team_list = ti.scrape_teams()
+    teams = []
+    for team_info in team_list:
+        teams.append(Team(*team_info))
+    engine = connect_db(config.dev.DB_URI)
+    Session = sessionmaker(bind = engine)
+    session = Session()
+    session.add_all(teams)
+    session.commit()
+    
+def test_team_season_orm():
+    base_url = 'https://www.pro-football-reference.com/teams/'
+    engine = connect_db(config.dev.DB_URI)
+    Session = sessionmaker(bind = engine)
+    session = Session()
+    teams = session.query(Team).all()
+    session.close()
+    for team in teams:
+        session = Session()
+        seasons = team.get_team_seasons(2000)
+        session.add_all(seasons)
+        session.commit()
+        session.close()
+     
+
+engine = connect_db(config.dev.DB_URI)
+init_db(engine)
+
+test_team_orm()
+test_team_season_orm()
+test_player_orm()
+test_player_season_orm()
