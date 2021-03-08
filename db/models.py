@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from sqlalchemy.ext.declarative.api import declarative_base, declared_attr
-from sqlalchemy.orm import relation, relationship
+from sqlalchemy.orm import relationship
 from db.db import Base
 
 class player(Base):
@@ -32,7 +32,7 @@ class team_season(Base):
         return Column(String(10), ForeignKey(team.url))
     @declared_attr
     def team_relationship(cls):
-        return relation('team')
+        return relationship('team')
 
 class player_season(): # not a table
     id = Column(Integer, primary_key=True)
@@ -48,6 +48,13 @@ class player_season(): # not a table
     @declared_attr
     def player_relationship(cls):
         return relationship('player')
+
+    @declared_attr
+    def team_season_id(cls):
+        return Column(Integer, ForeignKey(team_season.id))
+    @declared_attr
+    def team_season_relationship(cls):
+        return relationship('team_season')
 
 class qb(Base, player_season):
     __tablename__ = 'qb'
