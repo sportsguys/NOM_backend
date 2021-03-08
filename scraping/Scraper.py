@@ -4,6 +4,8 @@ from scraping.player_index import PlayerIndex
 import string, config
 from db.db import connect_db, init_db
 from sqlalchemy.orm import sessionmaker
+from db.models import team_season
+from sqlalchemy import and_
 
 def create_player_list():
     letters = list(string.ascii_uppercase)
@@ -18,18 +20,17 @@ def create_player_list():
 
 def test_player_season_orm():
     engine = connect_db(config.dev.DB_URI)
-    init_db(engine)
-    Session = sessionmaker(bind = engine)
+    Session = sessionmaker(bind = engine, autoflush=True)
     session = Session()
-    guys = session.query(Player).all() # this grabs Player objects defined in player.py
-    session.close()
+    guys = session.query(Player).all()
     for guy in guys:
-        session = Session() # close and remake to prevent bloating to 15GB of memory
-        # create a list of seasons as defined in positions.py
         seasons = guy.get_seasons()
+        for season in seasons:
+            season.team_season_id = session.query(team_season.id).filter(and_(
+                team_season.team_url == season.team, team_season.year_id == season.year_id)).one().id
         session.add_all(seasons)
         session.commit()
-        session.close()
+    session.close()
 
 # currently the player index returns a list of tuples with the information to create players
 # so the responsibility to create the list of actual player objects falls on this driver module
@@ -79,7 +80,7 @@ def test_team_season_orm():
 engine = connect_db(config.dev.DB_URI)
 init_db(engine)
 
-test_team_orm()
-test_team_season_orm()
-test_player_orm()
+#test_team_orm()
+#test_team_season_orm()
+#test_player_orm()
 test_player_season_orm()
