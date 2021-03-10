@@ -1,3 +1,4 @@
+import os, sys
 from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from sqlalchemy.ext.declarative.api import declared_attr
 from sqlalchemy.orm import relationship
@@ -17,6 +18,7 @@ class season(): # not a table
     gs = Column(Integer) #games started
     age = Column(Integer)
     team = Column(String(5))
+    salary = Column(Integer) #salary of player for that season
 
     @declared_attr
     def player_id(cls):
@@ -88,3 +90,10 @@ class defense(Base, season):
     tackles_loss = Column(Integer)
     qb_hits = Column(Integer)
     safety_mb = Column(Integer)
+
+class salary(Base):
+    __tablename__ = 'salary'
+    name = Column(String(50), primary_key=True)
+    team = Column(String(3))
+    year = Column(Integer)
+    salary = Column(Integer)
