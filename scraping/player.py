@@ -9,7 +9,7 @@ class Player(Page, player):
         self.url = url
 
     def get_seasons(self): 
-        self.load_page('https://www.pro-football-reference.com' + self.url)
+        self.request_page('https://www.pro-football-reference.com' + self.url)
         table_rows = self.bs.select_one('table tbody').contents
         seasons = []
         for row in table_rows:

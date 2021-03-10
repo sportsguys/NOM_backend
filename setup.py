@@ -10,7 +10,9 @@ setup(
         'sqlalchemy',
         'Click',
         'pymysql',
-        'numpy'
+        'numpy',
+        'pywebcopy',
+        'html5lib'
     ],
     entry_points={
         "console_scripts": [
