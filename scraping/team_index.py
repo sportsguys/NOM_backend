@@ -6,7 +6,7 @@ do_not_scrape = ['id', 'metadata', 'team_url', 'team_relationship']
 class TeamIndex(Page):
     def __init__(self, url=None):
         if url:
-            self.request_page(url)
+            self.load_page(url)
             self.teams = self.bs.select_one('#teams_active tbody')
 
     def scrape_teams(self):
@@ -52,7 +52,7 @@ class Team(Page, team):
         self.url = url
 
     def get_team_seasons(self, cutoff_year=None):
-        self.request_page('https://www.pro-football-reference.com/teams/' + self.url)
+        self.load_page('https://www.pro-football-reference.com/teams/' + self.url)
         table_rows = self.bs.select_one('table tbody').contents
         seasons = []
         for row in table_rows:

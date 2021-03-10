@@ -1,12 +1,12 @@
+from scraping.salary import PlayerSalaryIndex
 from scraping.team_index import Team, TeamIndex, TeamSeason
 from scraping.player import Player
 from scraping.player_index import PlayerIndex
 import string, config
 from db.db import connect_db, init_db
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import session, sessionmaker
 from db.models import team_season
 from sqlalchemy import and_
-from scraping.salary import download_rosters
 
 engine = connect_db(config.dev.DB_URI)
 init_db(engine)
@@ -71,11 +71,17 @@ def test_team_season_orm():
         session.commit()
     session.close()
      
-
+def test_salary_orm():
+    session = globals()['Session']()
+    team_seasons = session.query(TeamSeason).all()
+    for team_season in team_seasons:
+        si = PlayerSalaryIndex(team_season.year_id,team_season.team_url)
+        salaries = si.scrape_salaries()
 
 
 #test_team_orm()
 #test_team_season_orm()
 #test_player_orm()
 #test_player_season_orm()
-download_rosters(globals()['Session']())
+test_salary_orm()
+

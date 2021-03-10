@@ -1,34 +1,6 @@
-import pywebcopy
-from pywebcopy.parsers import MultiParser
 from scraping.Page import Page
 from db.models import salary
-from pywebcopy import save_webpage
 from scraping.team_index import TeamSeason
-from pywebcopy import save_webpage, WebPage, config
-import os
-import requests as r
-from bs4 import BeautifulSoup
-
-import signal
-from contextlib import contextmanager
-
-class TimeoutException(Exception): pass
-
-@contextmanager
-def time_limit(seconds):
-    def signal_handler(signum, frame):
-        raise TimeoutException("Timed out!")
-    signal.signal(signal.SIGALRM, signal_handler)
-    signal.alarm(seconds)
-    try:
-        yield
-    finally:
-        signal.alarm(0)
-
-
-current_dir = os.path.dirname(os.path.realpath(__file__))
-
-
 
 class PlayerSalary(salary):
 
@@ -43,49 +15,17 @@ class PlayerSalaryIndex(Page):
         self.team = team
         self.base_url = 'https://www.pro-football-reference.com/teams/'
         self.url = self.base_url + team + '/' + str(year) + '_roster.htm'
-    
-    def download_page(self):
-        download_args = {
-            'project_folder': current_dir,
-            'project_name': 'rosters',
-            'over_write': True,
-            'bypass_robots': True,
-            'load_css': False,
-            'load_images': False
-        }
-        try:
-            with time_limit(10):
-                save_webpage(self.url, **download_args)
-        except TimeoutException as e:
-            print('timedout')
+        self.load_page(self.url)
+        comment_parent = self.bs.select_one('#all_games_played_team')
+        self.load_page(comment_parent.contents[4])
+        self.tbody = self.bs.contents[0].contents[1].contents[0].contents[1].contents[7]
 
 
-def download_rosters(session):
-    base_url = 'www.pro-football-reference.com/teams/'
-    team_seasons = session.query(TeamSeason).all()
-    for team_season in team_seasons:
-        if int(team_season.year_id) < 2015:
-            continue
-        team_dir = current_dir + '/rosters/' + base_url + team_season.team_url
-        if not os.path.exists(team_dir):
-            os.makedirs(team_dir)
-        downloaded = False
-        for filename in os.listdir(team_dir):
-            if filename.endswith(str(team_season.year_id)+'_roster.htm'):
-                downloaded = True
-                continue
-        if downloaded:
-            continue
-        psi = PlayerSalaryIndex(team_season.year_id, team_season.team_url)
-        psi.download_page()
-
-
-"""
     def scrape_salaries(self):
         salaries_list = []
-        for row in self.salaries.contents:
+        for row in self.tbody:
+            pass
             #Here is where I implement the logic for scraping the salaries off the page and making them into a tuple.
         return salaries_list
-"""
 
 

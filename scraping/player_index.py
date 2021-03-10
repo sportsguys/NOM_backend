@@ -4,7 +4,7 @@ from scraping.player import switch
 class PlayerIndex(Page):
     def __init__(self, url=None, cutoff_year='2000'):
         if url:
-            self.request_page(url)
+            self.load_page(url)
             self.players = self.bs.select('#div_players')
             self.cutoff = cutoff_year
 
