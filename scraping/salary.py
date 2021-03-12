@@ -6,7 +6,8 @@ do_not_scrape = ['id', 'metadata', 'player_id', 'player_relationship', 'team_sea
 
 class PlayerSalary(Page, salary):
 
-    def __init__(self, salary, yearVal, team):
+    def __init__(self, salary, yearVal, team, name):
+        setattr(self, 'name', name)
         setattr(self, 'salary', salary)
         setattr(self, 'year', yearVal)
         setattr(self, 'team', team)
@@ -34,12 +35,17 @@ class PlayerSalaryIndex(Page):
             if row == '\n':
                 continue
             salary = row.select_one('[data-stat=salary]').text
+            name = row.select_one('[data-stat=player]').text
+            name = name.replace('*', '')
+            name = name.replace('+', '')
             if salary == '':
                  continue
             salary = salary.replace('$', '')
             salary = salary.replace(',', '')
-            salaries.append((int(salary), self.year, self.team))
+            salaries.append((int(salary), self.year, self.team, name))
         return salaries
+    
+
 
 
         
