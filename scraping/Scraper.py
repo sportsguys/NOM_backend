@@ -74,10 +74,17 @@ def test_team_season_orm():
 def test_salary_orm():
     session = globals()['Session']()
     team_seasons = session.query(TeamSeason).all()
+    salaries = []
+    salaryOs = []
     for team_season in team_seasons:
-        si = PlayerSalaryIndex(team_season.year_id,team_season.team_url)
-        salaries = si.scrape_salaries()
-
+        if team_season.year_id >= 2015:
+            si = PlayerSalaryIndex(team_season.year_id,team_season.team_url)
+            salaries.append(si.scrape_salaries())
+    for salary in salaries:
+        salaryOs.append(PlayerSalary(*salary))
+    session.add_all(salaryOs)
+    session.commit()
+    session.close()
 
 #test_team_orm()
 #test_team_season_orm()

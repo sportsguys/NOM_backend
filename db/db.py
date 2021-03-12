@@ -13,7 +13,7 @@ def connect_db(db_uri):
         return engine
     except s.exc.OperationalError as e:
         print("could not connect to db")
-        raise(e)    
+        raise(e)
 
 def get_engine() -> Engine:
     if "db" not in g:

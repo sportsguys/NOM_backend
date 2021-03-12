@@ -124,8 +124,9 @@ class defense(Base, player_season):
 class salary(Base):
     __tablename__ = 'salary'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    amount = Column(Integer)
+    salary = Column(Integer)
     year = Column(Integer)
+    team = Column(String(50))
 
     @declared_attr
     def player_id(cls):
