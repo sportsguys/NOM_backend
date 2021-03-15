@@ -6,7 +6,10 @@ class Position():
 
     def ping(self, row):
         self.get_all_row_data(row)
-        self.team = row.select_one('[data-stat=team] a').attrs['href'].split('/')[2]
+        try:
+            self.team = row.select_one('[data-stat=team] a').attrs['href'].split('/')[2]
+        except:
+            pass
 
     def get_all_row_data(self, row):
         myattrs = dir(self.__class__.__bases__[0])

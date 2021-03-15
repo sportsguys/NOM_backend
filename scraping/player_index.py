@@ -1,5 +1,5 @@
 from scraping.Page import Page
-from scraping.player import switch
+import re
 
 class PlayerIndex(Page):
     def __init__(self, url=None, cutoff_year='2000'):
@@ -13,19 +13,21 @@ class PlayerIndex(Page):
         """
         player_list = []
         for item in self.players[0].contents[1:-1]: #skip first and last <p> becuase theyre newlines
-            career_start = item.text.split(' ')[3].split('-')[0]
-            if career_start < self.cutoff:
+            
+            career_start = re.search('[0-9]{4}', item.text).group()
+            if int(career_start) < int(self.cutoff):
                 continue
 
+            name = item.select_one('a').text
+            if str(name).endswith(' '):
+                name = name[:-1]
+            
             pos = item.text.split('(')[1].split(')')[0]
             if '-' in pos: #only get first/primary position
                 pos = pos.split('-')[0]
-            if pos not in switch:
-                continue
             
-            name = item.select_one('a').text
             url = item.select_one('a').attrs['href']
-            
+
             player_list.append((name, url, pos))
         
         return player_list

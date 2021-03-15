@@ -1,10 +1,10 @@
 from scraping.salary import PlayerSalaryIndex
 from scraping.team_index import Team, TeamIndex, TeamSeason
-from scraping.player import Player
+from scraping.player import Player, switch
 from scraping.player_index import PlayerIndex
-import string, config
+import config, string
 from db.db import connect_db, init_db
-from sqlalchemy.orm import session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 from db.models import team_season
 from sqlalchemy import and_
 
@@ -27,10 +27,15 @@ def test_player_season_orm():
     session = globals()['Session']()
     guys = session.query(Player).all()
     for guy in guys:
+        if guy.position not in switch:
+            continue
         seasons = guy.get_seasons()
         for season in seasons:
-            season.team_season_id = session.query(team_season.id).filter(and_(
-                team_season.team_url == season.team, team_season.year_id == season.year_id)).one().id
+            try:
+                season.team_season_id = session.query(team_season.id).filter(and_(
+                    team_season.team_url == season.team, team_season.year_id == season.year_id)).one().id
+            except:
+                pass
         session.add_all(seasons)
         session.commit()
     session.close()
@@ -81,7 +86,7 @@ def test_salary_orm():
 
 #test_team_orm()
 #test_team_season_orm()
-#test_player_orm()
+test_player_orm()
 #test_player_season_orm()
-test_salary_orm()
+#test_salary_orm()
 
