@@ -1,8 +1,15 @@
 from db.models import qb, wr, rb, defense
 
-do_not_scrape = ['id', 'metadata', 'player_id', 'player_relationship']
+do_not_scrape = ['id', 'metadata', 'player_id', 'player_relationship', 'team_season_id', 'team_season_relationship']
 
 class Position():
+
+    def ping(self, row):
+        self.get_all_row_data(row)
+        try:
+            self.team = row.select_one('[data-stat=team] a').attrs['href'].split('/')[2]
+        except:
+            pass
 
     def get_all_row_data(self, row):
         myattrs = dir(self.__class__.__bases__[0])
@@ -23,28 +30,17 @@ class Position():
 class QB(qb, Position):
     def __init__(self, player_id):
         self.player_id = player_id # the foreign key to players
-
-    def ping(self, row):
-        self.get_all_row_data(row)
-        
+      
 class WR(wr, Position):
     def __init__(self, player_id):
         self.player_id = player_id # the foreign key to players
-
-    def ping(self, row):
-        self.get_all_row_data(row)
 
 class RB(rb, Position):
     def __init__(self, player_id):
         self.player_id = player_id # the foreign key to players
 
-    def ping(self, row):
-        self.get_all_row_data(row)
-
 class Defense(defense, Position):
     def __init__(self, player_id):
         self.player_id = player_id # the foreign key to players
 
-    def ping(self, row):
-        self.get_all_row_data(row)
 

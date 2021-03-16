@@ -7,10 +7,34 @@ class player(Base):
     __tablename__ = 'player'
     id = Column(Integer, primary_key=True)
     name = Column(String(50))
-    url = Column(String(200), unique=True)
+    url = Column(String(100), unique=True)
     position = Column(String(10))
 
-class season(): # not a table
+class team(Base):
+    __tablename__ = 'team'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    team_name = Column(String(50))
+    url = Column(String(10), unique=True) # 3 character PFR-specific abbreviation for url
+
+class team_season(Base):
+    __tablename__ = 'team_season'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    year_id = Column(Integer, primary_key=True)
+    wins = Column(Integer)
+    losses = Column(Integer)
+    ties = Column(Integer)
+    points = Column(Integer)
+    points_opp = Column(Integer)
+    mov = Column(Float)
+
+    @declared_attr
+    def team_url(cls):
+        return Column(String(10), ForeignKey(team.url))
+    @declared_attr
+    def team_relationship(cls):
+        return relationship('team')
+
+class player_season(): # not a table
     id = Column(Integer, primary_key=True)
     year_id = Column(Integer)    
     g = Column(Integer) #games
@@ -25,7 +49,14 @@ class season(): # not a table
     def player_relationship(cls):
         return relationship('player')
 
-class qb(Base, season):
+    @declared_attr
+    def team_season_id(cls):
+        return Column(Integer, ForeignKey(team_season.id))
+    @declared_attr
+    def team_season_relationship(cls):
+        return relationship('team_season')
+
+class qb(Base, player_season):
     __tablename__ = 'qb'
     pass_att = Column(Integer)
     pass_cmp = Column(Integer)
@@ -56,10 +87,10 @@ class receiver():
     rec_yds_per_g = Column(Float)
     rec_yds_per_tgt = Column(Float)
 
-class wr(Base, season, receiver):
+class wr(Base, player_season, receiver):
     __tablename__ = 'wr'
     
-class rb(Base, season, receiver):
+class rb(Base, player_season, receiver):
     __tablename__ = 'rb'
     rush_att  = Column(Integer)
     rush_yds = Column(Integer)
@@ -70,7 +101,7 @@ class rb(Base, season, receiver):
     rush_yds_per_g = Column(Float)
     rush_att_per_g = Column(Float)
 
-class defense(Base, season):
+class defense(Base, player_season):
     __tablename__ = 'defense'
     def_int = Column(Integer)
     def_int_yds = Column(Integer)
@@ -88,3 +119,19 @@ class defense(Base, season):
     tackles_loss = Column(Integer)
     qb_hits = Column(Integer)
     safety_mb = Column(Integer)
+
+
+class salary(Base):
+    __tablename__ = 'salary'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(50))
+    salary = Column(Integer)
+    year = Column(Integer)
+    team = Column(String(50))
+
+    @declared_attr
+    def player_url(cls):
+        return Column(String(100), ForeignKey(player.url))
+    @declared_attr
+    def player_relationship(cls):
+        return relationship('player')

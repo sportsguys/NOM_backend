@@ -1,4 +1,4 @@
-from scraping.positions import QB, WR, RB, Defense
+from scraping.player_seasons import QB, WR, RB, Defense
 from scraping.Page import Page
 from db.models import player
 
@@ -13,14 +13,17 @@ class Player(Page, player):
         table_rows = self.bs.select_one('table tbody').contents
         seasons = []
         for row in table_rows:
-            if row != '\n':
-                try:
-                    season = switch[self.position](self.id)
-                except KeyError as e:
-                    print(e, 'position not recognized')
-                    continue
-                season.ping(row)
-                seasons.append(season)
+            if row == '\n':
+                continue
+            try:
+                season = switch[self.position](self.id)
+            except KeyError as e:
+                print(e, 'position not recognized')
+                continue
+            season.ping(row)
+            if season.year_id < 2000:
+                continue
+            seasons.append(season)
         return seasons
 
 # module level variable only needs to be initialized once        
