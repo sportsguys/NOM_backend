@@ -14,8 +14,8 @@ class PlayerIndex(Page):
         player_list = []
         for item in self.players[0].contents[1:-1]: #skip first and last <p> becuase theyre newlines
             
-            career_start = re.search('[0-9]{4}', item.text).group()
-            if int(career_start) < int(self.cutoff):
+            career_end = re.search('-[0-9]{4}', item.text).group()[1:]
+            if int(career_end) < 2000:
                 continue
 
             name = item.select_one('a').text

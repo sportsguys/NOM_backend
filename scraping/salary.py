@@ -6,11 +6,12 @@ do_not_scrape = ['id', 'metadata', 'player_id', 'player_relationship', 'team_sea
 
 class PlayerSalary(Page, salary):
 
-    def __init__(self, salary, yearVal, team, name):
+    def __init__(self, salary, yearVal, team, name, url):
         setattr(self, 'name', name)
         setattr(self, 'salary', salary)
         setattr(self, 'year', yearVal)
         setattr(self, 'team', team)
+        setattr(self, 'player_url', url)
 
 
 #Use this class to loop through all of the teams different pages and years to obtain a tuple of the values that need to be inserted using the ORM.
@@ -36,13 +37,14 @@ class PlayerSalaryIndex(Page):
                 continue
             salary = row.select_one('[data-stat=salary]').text
             name = row.select_one('[data-stat=player]').text
+            url = row.select_one('[data-stat=player] a').attrs['href']
             name = name.replace('*', '')
             name = name.replace('+', '')
             if salary == '':
                  continue
             salary = salary.replace('$', '')
             salary = salary.replace(',', '')
-            salaries.append((int(salary), self.year, self.team, name))
+            salaries.append((int(salary), self.year, self.team, name, url))
         return salaries
     
 

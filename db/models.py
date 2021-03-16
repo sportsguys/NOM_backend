@@ -130,8 +130,8 @@ class salary(Base):
     team = Column(String(50))
 
     @declared_attr
-    def player_name(cls):
-        return Column(String(50), ForeignKey(player.name))
+    def player_url(cls):
+        return Column(String(100), ForeignKey(player.url))
     @declared_attr
     def player_relationship(cls):
         return relationship('player')

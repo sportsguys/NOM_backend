@@ -21,6 +21,8 @@ class Player(Page, player):
                 print(e, 'position not recognized')
                 continue
             season.ping(row)
+            if season.year_id < 2000:
+                continue
             seasons.append(season)
         return seasons
 
