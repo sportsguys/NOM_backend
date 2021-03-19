@@ -41,6 +41,7 @@ class player_season(): # not a table
     gs = Column(Integer) #games started
     age = Column(Integer)
     team = Column(String(5))
+    av = Column(Float)
 
     @declared_attr
     def player_id(cls):
@@ -120,6 +121,37 @@ class defense(Base, player_season):
     qb_hits = Column(Integer)
     safety_mb = Column(Integer)
 
+
+class kicker(Base, player_season):
+    __tablename__ = 'kicker'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    fga1 = Column(Integer)
+    fgm1 = Column(Integer)
+    fga2 = Column(Integer)
+    fgm2 = Column(Integer)
+    fga3 = Column(Integer)
+    fgm3 = Column(Integer)
+    fga4 = Column(Integer)
+    fgm4 = Column(Integer)
+    fga5 = Column(Integer)
+    fgm5 = Column(Integer)
+    fga = Column(Integer)
+    fgm = Column(Integer)
+    fg_long = Column(Float)
+    fg_perc = Column(Float)
+    xpa = Column(Integer)
+    xpm = Column(Integer)
+    xp_perc = Column(Float)
+    kickoff = Column(Integer)
+    kickoff_yds = Column(Integer)
+    kickoff_tb = Column(Integer)
+    kickoff_tb_pct = Column(Float)
+    kickoff_yds_avg = Column(Float)
+    punt = Column(Integer)
+    punt_yds = Column(Integer)
+    punt_long = Column(Integer)
+    punt_blocked = Column(Integer)
+    punt_yds_per_punt = Column(Float)
 
 class salary(Base):
     __tablename__ = 'salary'
