@@ -1,4 +1,4 @@
-from db.models import qb, wr, rb, defense
+from db.models import qb, wr, rb, defense, kicker
 
 do_not_scrape = ['id', 'metadata', 'player_id', 'player_relationship', 'team_season_id', 'team_season_relationship']
 
@@ -19,9 +19,11 @@ class Position():
                     value = row.select_one('[data-stat={}]'.format(attr)).text
                     value = value.replace('*','')
                     value = value.replace('+','')
-                except:
+                    value = value.replace('%','')
+                except Exception as e:
+                    print(e)
                     value = 0 #for now. should add logging
-                if not value:
+                if not value and value != '0.0' and value != 0:
                     value = -1
                 setattr(self, attr, value)
 
@@ -43,4 +45,7 @@ class Defense(defense, Position):
     def __init__(self, player_id):
         self.player_id = player_id # the foreign key to players
 
+class Kicker(kicker, Position):
+    def __init__(self, player_id):
+            self.player_id = player_id # the foreign key to players
 

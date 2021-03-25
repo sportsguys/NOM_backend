@@ -1,4 +1,4 @@
-from scraping.player_seasons import QB, WR, RB, Defense
+from scraping.player_seasons import QB, WR, RB, Defense, Kicker
 from scraping.Page import Page
 from db.models import player
 
@@ -21,7 +21,7 @@ class Player(Page, player):
                 print(e, 'position not recognized')
                 continue
             season.ping(row)
-            if season.year_id < 2000:
+            if int(season.year_id) < 2000:
                 continue
             seasons.append(season)
         return seasons
@@ -38,4 +38,5 @@ switch = {
     'LB': Defense,
     'DL': Defense,
     'DE': Defense,
+    'K' : Kicker
 }
