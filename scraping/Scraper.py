@@ -64,14 +64,11 @@ def test_team_season_orm(session):
 def test_salary_orm(session):
     team_seasons = session.query(TeamSeason).all()
     salaries = []
-    salaryOs = []
     for team_season in team_seasons:
         if team_season.year_id >= 2015:
             si = PlayerSalaryIndex(team_season.year_id,team_season.team_url)
             salaries.extend(si.scrape_salaries())
-    for salary in salaries:
-        salaryOs.append(PlayerSalary(*salary))
-    session.add_all(salaryOs)
+    session.add_all(salaries)
     session.commit()
 
 def spotrac_salaries(session):
@@ -105,8 +102,8 @@ def populate():
     #test_team_season_orm(session)
     #test_player_orm(session)
     #test_player_season_orm(session)
-    #test_salary_orm(session)
-    spotrac_salaries(session)
+    test_salary_orm(session)
+    #spotrac_salaries(session)
     session.close()
 
 populate()

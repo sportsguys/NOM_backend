@@ -29,18 +29,18 @@ class TeamSeason(team_season):
         self.team_url = team_url
 
     def get_all_row_data(self, row):
-            myattrs = dir(self.__class__.__bases__[0])
-            for attr in myattrs:
-                if not attr.startswith('__') and not attr.startswith('_') and attr not in do_not_scrape:
-                    try:
-                        value = row.select_one('[data-stat={}]'.format(attr)).text
-                        value = value.replace('*','')
-                        value = value.replace('+','')
-                    except:
-                        value = 0 #for now. should add logging
-                    if not value:
-                        value = -1
-                    setattr(self, attr, value)
+        myattrs = dir(self.__class__.__bases__[0])
+        for attr in myattrs:
+            if not attr.startswith('__') and not attr.startswith('_') and attr not in do_not_scrape:
+                try:
+                    value = row.select_one('[data-stat={}]'.format(attr)).text
+                    value = value.replace('*','')
+                    value = value.replace('+','')
+                except:
+                    value = 0 #for now. should add logging
+                if not value:
+                    value = -1
+                setattr(self, attr, value)
 
     def ping(self, row):
         self.get_all_row_data(row)
