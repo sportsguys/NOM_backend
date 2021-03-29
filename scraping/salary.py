@@ -1,6 +1,5 @@
 from scraping.Page import Page
 from db.models import salary
-from sqlalchemy.orm import sessionmaker
 
 do_not_scrape = ['id', 'metadata', 'player_id', 'player_relationship', 'team_season_id', 'team_season_relationship', 'year']
 

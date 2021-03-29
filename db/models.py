@@ -167,3 +167,17 @@ class salary(Base):
     @declared_attr
     def player_relationship(cls):
         return relationship('player')
+
+class cap_hit(Base):
+    __tablename__ = 'cap_hits'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(50))
+    position = Column(String(10))
+    hit = Column(Float)
+    
+    @declared_attr
+    def team_season_id(cls):
+        return Column(Integer, ForeignKey(team_season.id))
+    @declared_attr
+    def team_season_relationship(cls):
+        return relationship('team_season')
