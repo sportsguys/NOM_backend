@@ -9,6 +9,7 @@ def _get_indices_of_k_smallest(arr, k):
     """
     return tuple(np.array(np.unravel_index(np.argpartition(arr.ravel(), k), 
         arr.shape))[:, range(min(k, 0), max(k, 0))])
+
 class ValueModel():
     def __init__(self, name='test', data=None, labels=None):
         self.name = name
@@ -23,19 +24,18 @@ class ValueModel():
 
             Returns tuple of lists data, labels
         """
-        p=np.random.randint(low=1, high=10, size=(1,50))
-        p = p / p.sum(axis=1, keepdims=1)
+        probability_table = np.random.randint(low=1, high=10, size=(1,50))
+        probability_table = probability_table / probability_table.sum(axis=1, keepdims=1)
         data = []
         labels = []
-        for i in range (100):
-            sample = np.random.choice(50, 10, replace=False, p=p[0])
+        for iter in range (100):
+            sample = np.random.choice(50, 10, replace=False, p=probability_table[0])
             data.append(sample)
             labels.append(np.sum(sample))
-        self.dataset, self.labels = data, labels
+        return data, labels
 
     def feature_normalize(self):
-        """ normalize feature vectors in the dataset to contain 
-            values [0,1] based on mean and standard deviation
+        """ normalize feature vectors in the dataset to Z scores
             
             self.dataset and self.data are separate to allow for other normalization techniques 
         """
@@ -101,7 +101,5 @@ class ValueModel():
         for i, sample in enumerate(self.data):
             am = self.som.activate(sample)
             for neuron, _ in winners:
-                # neuron is a centroid coordinate
                 scores[i] += (1 / am[neuron[0]][neuron[1]]) 
-                # lower activation value = closer to neuron. using 1 might be arbitrary
         return scores

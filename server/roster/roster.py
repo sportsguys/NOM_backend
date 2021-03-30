@@ -46,12 +46,6 @@ def allocate(cash, polys):
 def min_salary(year):
     return 375000 + (year-2011)*15000
 
-def avg_cap():
-    total_cap = 0
-    for idx, value in enumerate(yearly_caps.values()):
-        total_cap += value
-    return total_cap / (idx+1)
-
 def avg_min_sal():
     total_min_sal = 0
     for i, year in enumerate(yearly_caps.keys()):
@@ -67,7 +61,7 @@ def min_cap_dist():
 
 def remaining_cash():
     mcd = min_cap_dist()
-    remaining_cash = avg_cap()
+    remaining_cash = np.mean(list(yearly_caps.values()))
     for value in mcd.values():
         remaining_cash -= value
     return remaining_cash
