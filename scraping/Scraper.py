@@ -1,3 +1,4 @@
+from scraping.spotrac import CapPage, SpotracTeams
 from scraping.salary import PlayerSalary, PlayerSalaryIndex
 from scraping.team_index import Team, TeamIndex, TeamSeason
 from scraping.player import Player, switch
@@ -63,14 +64,33 @@ def test_team_season_orm(session):
 def test_salary_orm(session):
     team_seasons = session.query(TeamSeason).all()
     salaries = []
-    salaryOs = []
     for team_season in team_seasons:
         if team_season.year_id >= 2015:
             si = PlayerSalaryIndex(team_season.year_id,team_season.team_url)
             salaries.extend(si.scrape_salaries())
-    for salary in salaries:
-        salaryOs.append(PlayerSalary(*salary))
-    session.add_all(salaryOs)
+    session.add_all(salaries)
+    session.commit()
+
+def spotrac_salaries(session):
+    cap_hits = []
+    teams = session.query(Team.team_name).all()
+    spotrac_teams_page = SpotracTeams()
+    spotrac_team_urls = spotrac_teams_page.team_url_list()
+    for idx, team_url in enumerate(spotrac_team_urls):
+        for year in range(2011,2021):
+            cap_index_url = team_url + str(year)
+            cap_index = CapPage(cap_index_url)
+            team_season_cap_hits = cap_index.scrape_caps()
+            if team_season_cap_hits is None:
+                continue
+            for cap_hit in team_season_cap_hits:
+                cap_hit.team_season_id = session.query(team_season).filter(and_(
+                    team_season.team_url == session.query(Team.url).filter(
+                        Team.team_name == teams[idx].team_name), 
+                    team_season.year_id == year)
+                ).all()[0].id
+            cap_hits.extend(team_season_cap_hits)
+    session.add_all(cap_hits)
     session.commit()
 
 def populate():
@@ -81,8 +101,9 @@ def populate():
     #test_team_orm(session)
     #test_team_season_orm(session)
     #test_player_orm(session)
-    test_player_season_orm(session)
+    #test_player_season_orm(session)
     test_salary_orm(session)
+    #spotrac_salaries(session)
     session.close()
 
 populate()

@@ -11,7 +11,6 @@ setup(
         'Click',
         'pymysql',
         'numpy',
-        'pywebcopy',
         'html5lib'
     ],
     entry_points={
