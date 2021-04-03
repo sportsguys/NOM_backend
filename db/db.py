@@ -19,6 +19,12 @@ def get_engine() -> Engine:
     if "db" not in g:
         g.db = connect_db(current_app.config['DB_URI'])
     return g.db
+
+def get_session():
+    if "session" not in g:
+        Session = sessionmaker(bind=get_engine(), autoflush=True)
+        g.session = Session()
+    return g.session
     
 Base = declarative_base()
 def init_db(engine):
