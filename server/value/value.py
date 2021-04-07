@@ -39,38 +39,44 @@ class ValueModel():
         n_features = len(self.data[0])
         xy = int(sqrt(10*sqrt(len(self.data))))
         # create SOM and train weights to cluster samples
-        self.som = MiniSom(xy, xy, n_features, sigma=.4, learning_rate=.5)
+        self.som = MiniSom(xy, xy, n_features, sigma=0.5, learning_rate=0.4)
         self.som.pca_weights_init(self.data)
-        self.som.train(self.data, 100)
+        self.som.train(self.data, 2000)
 
     def save_model(self):
-        with open(self.name + '.p', 'wb') as outfile:
+        with open('server/value/' + self.name + '.p', 'wb') as outfile:
             pickle.dump(self.som, outfile)
 
     def load_model(self, name):
         if name:
             try:
-                with open(name + '.p', 'rb') as infile:
+                with open('server/value/maps/' + name + '.p', 'rb') as infile:
                     self.som = pickle.load(infile)
             except:
                 print('could not load model {}'.format(name))
 
-    def score_one_avg(self, sample, k):
+    def score_set_avg(self, data, k):
+        lm = self.som.labels_map(self.data, self.labels)
+        scores = []
+        for sample in data:
+            scores.append(self.score_one_avg(sample, k, lm))
+        return scores
+
+    def score_one_avg(self, sample, k, lm):
         """ score sample according to average value of the
             samples centroids plus k-1 closest neurons
         """
-        lm = self.som.labels_map(self.data, self.labels)
         am = self.som.activate(sample)
         cls = _get_indices_of_k_smallest(am, k)
         total = 0
-        num = 0
+        num = 1
         for i, x in enumerate(cls[0]):
             neuron = (x, cls[1][i])
             nscores = lm[neuron]
             if nscores:
                 for k, score in enumerate(nscores):
                     total += score
-                    num += 1
+                num += k
         total /= num
         return total
 
@@ -83,15 +89,33 @@ class ValueModel():
                 winners.pop(0)
         return winners
 
-    def score_one_dist(self, sample, k):
+    def _k_least_neurons(self, lm, k):
+        winners = []
+        for position, p_scores in lm.items():
+            winners.append((position, np.min(p_scores)))
+            if len(winners) > k:
+                winners.sort(key=lambda kv: kv[1], reverse=True)
+                winners.pop(0)
+        return winners
+
+    def score_set_dist(self, data, k, role):
+        lm = self.som.labels_map(self.data, self.labels)
+        if role == 'offense':
+            top_k = self._k_greatest_neurons(lm, k)
+        if role == 'defense':
+            top_k = self._k_least_neurons(lm, k)
+        scores = []
+        for sample in data:
+            scores.append(self.score_one_dist(sample, top_k))
+        return scores
+
+    def score_one_dist(self, sample, top_k):
         """ score sample according to inverse distance 
             from neurons containing k greatest labels 
         """
-        lm = self.som.labels_map(self.data, self.labels)
-        winners = self._k_greatest_neurons(lm, k)
         am = self.som.activate(sample)
         score = 0
-        for neuron, _ in winners:
+        for neuron, _ in top_k:
             score += (1/am[neuron[0]][neuron[1]])
         return score
 

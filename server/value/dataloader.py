@@ -25,23 +25,32 @@ class ValueDataLoader():
             rows.append(list(item.__dict__.values())[1:-2]) #slice instance state and relationship objects
         return rows
 
-    def batch_player_seasons(self, poss: str, start, end):
-        pos = switch[poss.upper()]
-        seasons = self.sess.query(pos).filter(and_(
-            pos.year_id >= start, pos.year_id <= end)).join(
-            pos.player_relationship).filter_by(position=poss.upper())
+    def batch_player_seasons(self, poss: str, start, end) -> list:
+        season_table = switch[poss.upper()]
+
+        for key, value in position_map.items():
+            if poss in value:
+                positions = value
+
+        subq = self.sess.query(player).filter(
+            player.position.in_(positions)).subquery()
+
+        seasons = self.sess.query(season_table).filter(and_(
+            season_table.year_id >= start, season_table.year_id <= end)).join(subq)
 
         return seasons.all()
 
-    def label_offense_seasons(self, seasons):
+    def label_seasons(self, seasons, role):
         labels = []
         for season in seasons:
             points = self.sess.query(team_season).filter(
                 team_season.id == season.team_season_id
             ).all()
             try:
-                points = points[0].points
-                # currently for qb tinkering
+                if role == 'offense':
+                    points = points[0].points
+                elif role == 'defense':
+                    points = points[0].points_opp
                 label = points
             except:
                 label = -1
@@ -57,9 +66,15 @@ class ValueDataLoader():
         return season[0]
 
     def minmax_norm(self, dataset):
+        dataset = np.array(dataset)
+        zero_cols = np.argwhere(np.all(dataset[..., :] == 0, axis = 0))
+        dataset = np.delete(dataset, zero_cols, axis=1)
         return ((dataset - np.min(dataset, axis=0)) / (np.max(dataset, axis=0) - np.min(dataset, axis=0)))
 
-    def zscore_norm(self, dataset):
+    def zscore_norm(self, dataset: np.ndarray) -> np.ndarray :
+        dataset = np.array(dataset)
+        zero_cols = np.argwhere(np.all(dataset[..., :] == 0, axis = 0))
+        dataset = np.delete(dataset, zero_cols, axis=1)
         return (dataset - np.mean(dataset, axis=0)) / np.std(dataset, axis=0)
 
     def create_dataset(self, seasons, role):
@@ -70,11 +85,7 @@ class ValueDataLoader():
             data_vec = self.get_vectors([season])[0]
             if -1 in data_vec:
                 continue
-            if role == 'offense':
-                label = self.label_offense_seasons([season])[0]
-            elif role == 'defense':
-                #label = self.label_defense_seasons([season])[0]
-                pass
+            label = self.label_seasons([season], role)[0]
             if label == -1:
                 continue
             data.append(data_vec)
