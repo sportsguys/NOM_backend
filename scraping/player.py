@@ -26,7 +26,7 @@ class Player(Page, player):
             seasons.append(season)
         return seasons
 
-# module level variable only needs to be initialized once        
+# module level variable only needs to be initialized once 
 switch = {  
     'QB': QB,
     'WR': WR,
@@ -38,5 +38,10 @@ switch = {
     'LB': Defense,
     'DL': Defense,
     'DE': Defense,
-    'K' : Kicker
+    'K' : Kicker,
+    'HB': RB,
+    'FB': RB,
+    'DT': Defense,
+    'ILB': Defense,
+    'EDGE': Defense
 }

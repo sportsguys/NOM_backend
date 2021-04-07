@@ -29,7 +29,7 @@ class ValueDataLoader():
         season_table = switch[poss.upper()]
 
         for key, value in position_map.items():
-            if poss in value:
+            if poss.upper() in value:
                 positions = value
 
         subq = self.sess.query(player).filter(
@@ -83,6 +83,8 @@ class ValueDataLoader():
         good_seasons = []
         for season in seasons:
             data_vec = self.get_vectors([season])[0]
+            if role == 'kicker':
+                data_vec = [0 if i==-1 else i for i in data_vec]
             if -1 in data_vec:
                 continue
             label = self.label_seasons([season], role)[0]

@@ -52,8 +52,9 @@ class ValueModel():
             try:
                 with open('server/value/maps/' + name + '.p', 'rb') as infile:
                     self.som = pickle.load(infile)
-            except:
+            except Exception as e:
                 print('could not load model {}'.format(name))
+                raise(e)
 
     def score_set_avg(self, data, k):
         lm = self.som.labels_map(self.data, self.labels)
