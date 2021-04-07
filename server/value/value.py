@@ -45,13 +45,13 @@ class ValueModel():
 
     def save_model(self):
         with open('server/value/' + self.name + '.p', 'wb') as outfile:
-            pickle.dump(self.som, outfile)
+            pickle.dump(self, outfile)
 
     def load_model(self, name):
         if name:
             try:
                 with open('server/value/maps/' + name + '.p', 'rb') as infile:
-                    self.som = pickle.load(infile)
+                    return pickle.load(infile)
             except Exception as e:
                 print('could not load model {}'.format(name))
                 raise(e)
@@ -101,7 +101,7 @@ class ValueModel():
 
     def score_set_dist(self, data, k, role):
         lm = self.som.labels_map(self.data, self.labels)
-        if role == 'offense':
+        if role == 'offense' or role == 'kicker':
             top_k = self._k_greatest_neurons(lm, k)
         if role == 'defense':
             top_k = self._k_least_neurons(lm, k)

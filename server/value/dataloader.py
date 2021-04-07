@@ -47,7 +47,7 @@ class ValueDataLoader():
                 team_season.id == season.team_season_id
             ).all()
             try:
-                if role == 'offense':
+                if role == 'offense' or role =='kicker':
                     points = points[0].points
                 elif role == 'defense':
                     points = points[0].points_opp
@@ -77,7 +77,7 @@ class ValueDataLoader():
         dataset = np.delete(dataset, zero_cols, axis=1)
         return (dataset - np.mean(dataset, axis=0)) / np.std(dataset, axis=0)
 
-    def create_dataset(self, seasons, role):
+    def create_dataset(self, seasons: list, role):
         labels = []
         data = []
         good_seasons = []

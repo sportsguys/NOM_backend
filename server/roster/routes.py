@@ -1,6 +1,5 @@
 from flask import Blueprint
 from flask.globals import request
-from roster.roster import RosterModel
 
 bp = Blueprint("roster_model", __name__)
 

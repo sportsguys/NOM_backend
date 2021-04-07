@@ -1,9 +1,6 @@
-from flask import Blueprint
+from flask import Blueprint, request
 from flask.json import jsonify
-from flask.wrappers import Request
-from server.value.valuenet import ValueNet
 from server.value.value import ValueModel
-import numpy as np
 
 roles = {
     'offense': ['QB', 'RB', 'TE', 'WR'],
@@ -14,10 +11,9 @@ roles = {
 bp = Blueprint("player_model", __name__)
 @bp.route('/test', methods=['GET'])
 def value_model_endpoint():
-    pass
-    # request_data = Request.get_json()
-    # dres, seasons = value_model()
-    # return jsonify(dres)
+    position_category = request.args['pos_group']
+    dres, seasons = value_model(position_category)
+    return jsonify(dres)
     
 
 def value_model(category_name: str):
@@ -29,12 +25,11 @@ def value_model(category_name: str):
     
     all_seasons = dl.batch_player_seasons(category_name, 2007, 2020)
     tr_seasons, data, labels = dl.create_dataset(all_seasons, role)
-
     data_normed = dl.zscore_norm(data)
     
     vm = ValueModel(category_name, data_normed, labels)
     try:
-        vm.load_model(category_name)
+        vm = vm.load_model(category_name)
     except:
         vm.train_model()
     
@@ -44,6 +39,5 @@ def value_model(category_name: str):
         key = season.player_relationship.name + ' ' + str(season.year_id)
         dres[key] = dscores[i] * season.av
     dres = dict(sorted(dres.items(), key=lambda item: item[1], reverse=True))
-    
     return dres, tr_seasons
 
