@@ -3,19 +3,7 @@ from db.db import connect_db, get_session
 from db.models import cap_hit, team, team_season
 from sqlalchemy import and_
 from sqlalchemy.orm.session import sessionmaker
-
-position_map = {
-    'QB': ['QB', 'QB/TE'],
-    'RB': ['RB', 'HB', 'FB'],
-    'TE': ['TE'],
-    'WR': ['WR'],
-    'OL': ['G', 'T', 'LT', 'RT', 'C', 'RG', 'LG', 'OG', 'NT', 'OT', 'OL', 'G,T', 'C,G', 'G,C', 'T,G'],
-    'DL': ['DT', 'DE', 'DL'],
-    'LB': ['OLB', 'ILB', 'LB', 'EDGE'],
-    'DB': ['CB', 'FS', 'S', 'SS', 'DB'],
-    'K' : ['K', 'P', 'LS']
-}
-
+from db.constants import position_map
 
 class RosterData():
     def __init__(self):

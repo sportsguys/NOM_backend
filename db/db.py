@@ -33,3 +33,4 @@ def init_db(engine):
                                         bind=engine))
     import db.models
     Base.metadata.create_all(bind=engine)
+    

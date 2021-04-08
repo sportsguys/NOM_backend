@@ -11,7 +11,9 @@ setup(
         'Click',
         'pymysql',
         'numpy',
-        'html5lib'
+        'html5lib',
+        'requests',
+        'bs4'
     ],
     entry_points={
         "console_scripts": [

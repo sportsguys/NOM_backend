@@ -1,23 +1,18 @@
+from db.constants import roles
 from flask import Blueprint, request
 from flask.json import jsonify
+from server.value.player_data import ValueDataLoader
 from server.value.value import ValueModel
 
-roles = {
-    'offense': ['QB', 'RB', 'TE', 'WR'],
-    'defense': ['DL', 'LB', 'DB'],
-    'kicker': ['K']
-}
-
-bp = Blueprint("player_model", __name__)
+bp = Blueprint('player_model', __name__)
 @bp.route('/test', methods=['GET'])
-def value_model_endpoint():
+def score_position_endpoint():
     position_category = request.args['pos_group']
-    dres, seasons = value_model(position_category)
+    dres, seasons = score_position(position_category)
     return jsonify(dres)
     
 
-def value_model(category_name: str):
-    from server.value.dataloader import ValueDataLoader
+def score_position(category_name: str):
     dl = ValueDataLoader()
     for key, value in roles.items():
         if category_name.upper() in value:

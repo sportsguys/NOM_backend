@@ -1,12 +1,12 @@
 import copy
 import config
+import numpy as np
+from db.constants import position_map
 from db.db import connect_db, get_engine
 from db.models import *
+from scraping.player import switch
 from sqlalchemy import and_
 from sqlalchemy.orm.session import sessionmaker
-from server.roster.roster_data import position_map
-from scraping.player import switch
-import numpy as np
 
 
 class ValueDataLoader():

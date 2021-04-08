@@ -1,5 +1,9 @@
 from flask import Blueprint
 from flask.globals import request
+from server.roster.roster import RosterModel
+from db.constants import position_map
+from server.salary.routes import fit_salary_curve
+import time
 
 bp = Blueprint("roster_model", __name__)
 
@@ -24,10 +28,29 @@ def compare_endpoint():
 
 
 def optimal_dist():
-    pass
+    start = time.time()
+    curves = {}
+    for position in position_map.keys():
+        if position == 'OL' or position=='K':
+            continue
+        curves[position] = fit_salary_curve(position)
+    rm = RosterModel()
+    cash = rm.remaining_cash()
+    ol_cash = cash / 4.0
+    cash *= 0.75 #OL gets 0.25
+    allocations = rm.allocate(cash, list(curves.values()))
+    optimal = {}
+    for i, (key, value) in enumerate(curves.items()):
+        optimal[key] = allocations[i]
+    optimal['OL'] = ol_cash
+    end = time.time()
+    print('time spent generating optimal team distribution: {} seconds'.format(end-start))
+    return 0
 
 def evaluate_team(team_name, year):
     pass
 
 def compare_teams(team_a, team_b, year_a, year_b):
     pass
+
+optimal_dist()

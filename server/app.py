@@ -10,5 +10,8 @@ def create_app():
 
     from server.roster import routes as roster_routes
     app.register_blueprint(roster_routes.bp, url_prefix='/roster')
+
+    from server.salary import routes as salary_routes
+    app.register_blueprint(salary_routes.bp, url_prefix='/salary')
     
     return app
