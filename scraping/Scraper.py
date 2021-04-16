@@ -84,13 +84,10 @@ def spotrac_salaries(session):
             if team_season_cap_hits is None:
                 continue
             for cap_hit in team_season_cap_hits:
-                pos = player_season_table_switch[cap_hit.position]
-                cap_hit.player_season_id = session.query(pos).filter(and_(
-                    pos.team_season_id == session.query(team_season).filter(and_(
-                        team_season.team_url == session.query(Team.url).filter(
+                cap_hit.team_season_id = session.query(team_season).filter(and_(
+                    team_season.team_url == session.query(Team.url).filter(
                         Team.team_name == teams[idx].team_name), 
-                            team_season.year_id == year)),
-                    pos.player_relationship.name == cap_hit.name)
+                    team_season.year_id == year)
                 ).all()[0].id
                 
             cap_hits.extend(team_season_cap_hits)
