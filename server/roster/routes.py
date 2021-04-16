@@ -28,12 +28,15 @@ def compare_endpoint():
 
 
 def optimal_dist():
-    start = time.time()
+    tstart = time.time()
     curves = {}
     for position in position_map.keys():
-        if position == 'OL' or position=='K':
+        if position == 'OL':
             continue
+        start = time.time()
         curves[position] = fit_salary_curve(position)
+        end = time.time()
+        print("time to generate fit for {} = {}".format(position, end-start))
     rm = RosterModel()
     cash = rm.remaining_cash()
     ol_cash = cash / 4.0
@@ -43,8 +46,8 @@ def optimal_dist():
     for i, (key, value) in enumerate(curves.items()):
         optimal[key] = allocations[i]
     optimal['OL'] = ol_cash
-    end = time.time()
-    print('time spent generating optimal team distribution: {} seconds'.format(end-start))
+    tend = time.time()
+    print('time spent generating optimal team distribution: {} seconds'.format(tend-tstart))
     return 0
 
 def evaluate_team(team_name, year):
@@ -54,3 +57,8 @@ def compare_teams(team_a, team_b, year_a, year_b):
     pass
 
 optimal_dist()
+"""
+score position = list of scored players
+find Bcoeff between pos score and label value
+model relationship between label and B_pos * log(salary)
+"""

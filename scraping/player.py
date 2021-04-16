@@ -16,7 +16,7 @@ class Player(Page, player):
             if row == '\n':
                 continue
             try:
-                season = switch[self.position](self.id)
+                season = player_season_table_switch[self.position](self.id)
             except KeyError as e:
                 print(e, 'position not recognized')
                 continue
@@ -27,7 +27,7 @@ class Player(Page, player):
         return seasons
 
 # module level variable only needs to be initialized once 
-switch = {  
+player_season_table_switch = {  
     'QB': QB,
     'WR': WR,
     'TE': WR,

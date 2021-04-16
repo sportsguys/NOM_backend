@@ -5,7 +5,7 @@ from sqlalchemy import and_
 from sqlalchemy.orm.session import sessionmaker
 from db.constants import position_map
 
-class RosterData():
+class RosterDataLoader():
     def __init__(self):
         #self.db = get_session()
         engine = connect_db(config.dev.DB_URI)

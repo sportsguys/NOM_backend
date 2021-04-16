@@ -248,7 +248,10 @@ class MiniSom(object):
         ng = self.nd_gaussian(win, sig)*eta
 
         # w_new = eta * neighborhood_function * (x-w)
-        self._weights += einsum('ij, ijk->ijk', ng, x-self._weights)
+        delta  = einsum('ij, ijk->ijk', ng, x-self._weights)
+        # if t % 1000 == 0 or t==max_iteration:
+        #     print('pausing')
+        self._weights += delta
 
     def quantization(self, data):
         """Assigns a code book (weights vector of the winning neuron)

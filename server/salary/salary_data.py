@@ -3,8 +3,7 @@ from db.db import connect_db, get_session
 from db.models import cap_hit
 from sqlalchemy import and_
 from sqlalchemy.orm.session import sessionmaker
-from db.constants import yearly_caps
-
+import pickle
 
 class SalaryDataLoader():
     def __init__(self):
@@ -30,11 +29,3 @@ class SalaryDataLoader():
                 continue
 
         return salaries, good_scores, good_seasons
-
-    def normalize_salaries(self, salaries, seasons):
-        proportions = []
-        for i, salary in enumerate(salaries):
-            year = seasons[i].year_id
-            cap = yearly_caps[year]
-            proportions.append(salary/cap)
-        return proportions

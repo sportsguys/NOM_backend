@@ -39,12 +39,12 @@ class ValueModel():
         n_features = len(self.data[0])
         xy = int(sqrt(10*sqrt(len(self.data))))
         # create SOM and train weights to cluster samples
-        self.som = MiniSom(xy, xy, n_features, sigma=0.5, learning_rate=0.4)
+        self.som = MiniSom(xy, xy, n_features, sigma=0.6, learning_rate=0.7)
         self.som.pca_weights_init(self.data)
-        self.som.train(self.data, 2000)
+        self.som.train(self.data, 10000, verbose=True)
 
     def save_model(self):
-        with open('server/value/' + self.name + '.p', 'wb') as outfile:
+        with open('server/value/maps/' + self.name + '.p', 'wb') as outfile:
             pickle.dump(self, outfile)
 
     def load_model(self, name):
@@ -120,4 +120,5 @@ class ValueModel():
             score += (1/am[neuron[0]][neuron[1]])
         return score
 
-    
+    def scores_bcoeff(self, scores):
+        self.labels

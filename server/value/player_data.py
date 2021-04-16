@@ -4,12 +4,12 @@ import numpy as np
 from db.constants import position_map
 from db.db import connect_db, get_engine
 from db.models import *
-from scraping.player import switch
-from sqlalchemy import and_
+from scraping.player import player_season_table_switch
+from sqlalchemy import and_, select
 from sqlalchemy.orm.session import sessionmaker
 
 
-class ValueDataLoader():
+class PlayerDataLoader():
     def __init__(self):
         #engine = get_engine()
         engine = connect_db(config.dev.DB_URI)
@@ -22,46 +22,35 @@ class ValueDataLoader():
         for item in objlist:
             item = copy.copy(item)
             [item.__dict__.pop(key, None) for key in non_dims]
-            rows.append(list(item.__dict__.values())[1:-2]) #slice instance state and relationship objects
+            vec = list(item.__dict__.values())[1:-2]
+            vec = [0 if i==-1 else i for i in vec]
+            rows.append(vec)
         return rows
 
-    def batch_player_seasons(self, poss: str, start, end) -> list:
-        season_table = switch[poss.upper()]
+    def create_dataset(self, poss: str, start, end) -> list:
+        pos_table = player_season_table_switch[poss.upper()]
 
         for key, value in position_map.items():
             if poss.upper() in value:
                 positions = value
 
-        subq = self.sess.query(player).filter(
-            player.position.in_(positions)).subquery()
+        stmt = select(pos_table, team_season.points).join_from(pos_table, team_season).filter(
+            and_(pos_table.av != 0, pos_table.year_id >= start, pos_table.year_id <= end)).join_from(
+                pos_table, player).filter(player.position.in_(positions))
 
-        seasons = self.sess.query(season_table).filter(and_(
-            season_table.year_id >= start, season_table.year_id <= end)).join(subq)
+        rows = self.sess.execute(stmt).all()
 
-        return seasons.all()
+        seasons = list(list(zip(*rows))[0])
+        labels = list(list(zip(*rows))[1])
+        data = self.get_vectors(seasons)
 
-    def label_seasons(self, seasons, role):
-        labels = []
-        for season in seasons:
-            points = self.sess.query(team_season).filter(
-                team_season.id == season.team_season_id
-            ).all()
-            try:
-                if role == 'offense' or role =='kicker':
-                    points = points[0].points
-                elif role == 'defense':
-                    points = points[0].points_opp
-                label = points
-            except:
-                label = -1
-            labels.append(label)
-        return labels
+        return seasons, labels, data
 
     def one_player_season(self, poss: str, name, year):
-        pos = switch[poss.upper()]
-        season = self.sess.query(pos).filter(
-            pos.year_id == year).join(
-                pos.player_relationship).filter_by(name=name)
+        season_table = player_season_table_switch[poss.upper()]
+        season = self.sess.query(season_table).filter(
+            season_table.year_id == year).join(
+                season_table.player_relationship).filter_by(name=name)
         season = season.all()
         return season[0]
 
@@ -76,21 +65,3 @@ class ValueDataLoader():
         zero_cols = np.argwhere(np.all(dataset[..., :] == 0, axis = 0))
         dataset = np.delete(dataset, zero_cols, axis=1)
         return (dataset - np.mean(dataset, axis=0)) / np.std(dataset, axis=0)
-
-    def create_dataset(self, seasons: list, role):
-        labels = []
-        data = []
-        good_seasons = []
-        for season in seasons:
-            data_vec = self.get_vectors([season])[0]
-            if role == 'kicker':
-                data_vec = [0 if i==-1 else i for i in data_vec]
-            if -1 in data_vec:
-                continue
-            label = self.label_seasons([season], role)[0]
-            if label == -1:
-                continue
-            data.append(data_vec)
-            labels.append(label)
-            good_seasons.append(season)
-        return good_seasons, data, labels

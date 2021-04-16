@@ -7,7 +7,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'flask',
-        'sqlalchemy',
+        'sqlalchemy==1.4.8',
         'Click',
         'pymysql',
         'numpy',

@@ -1,6 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey
-from sqlalchemy.ext.declarative.api import declared_attr
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, declared_attr
 from db.db import Base
 
 class player(Base):
