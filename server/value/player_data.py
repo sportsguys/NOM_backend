@@ -18,33 +18,45 @@ class PlayerDataLoader():
 
     def get_vectors(self, objlist):
         rows = []
-        non_dims = ['age', 'id', 'player_id', 'team_season_id', 'year_id', 'team', 'av', 'g', 'gs']
+        non_dims = ['age', 'id', 'player_id', 'team_season_id', 'player_season_id', 'year_id', 'team', 'av', 'g', 'gs']
         for item in objlist:
             item = copy.copy(item)
             [item.__dict__.pop(key, None) for key in non_dims]
-            vec = list(item.__dict__.values())[1:-2]
+            vec = list(item.__dict__.values())[1:]
             vec = [0 if i==-1 else i for i in vec]
             rows.append(vec)
         return rows
 
-    def create_dataset(self, poss: str, start, end) -> list:
+    def create_dataset(self, poss: str, start, end, role) -> list:
         pos_table = player_season_table_switch[poss.upper()]
 
         for key, value in position_map.items():
             if poss.upper() in value:
                 positions = value
 
-        stmt = select(pos_table, team_season.points).join_from(pos_table, team_season).filter(
-            and_(pos_table.av != 0, pos_table.year_id >= start, pos_table.year_id <= end)).join_from(
-                pos_table, player).filter(player.position.in_(positions))
+        if role == 'defense':
+            stmt = stmt = select(pos_table, team_season.points_opp).join(
+                    pos_table.player_relationship).filter(player.position.in_(positions)).join(
+                    pos_table.team_season_relationship).join(
+                    pos_table.player_season_relationship).filter(and_(
+                        player_season.year_id >= start, player_season.av != 0))#.join(
+                    #cap_hit, cap_hit.player_season_id == pos_table.player_season_id)
+        else:
+            stmt = stmt = select(pos_table, team_season.points).join(
+                    pos_table.player_relationship).filter(player.position.in_(positions)).join(
+                    pos_table.team_season_relationship).join(
+                    pos_table.player_season_relationship).filter(and_(
+                        player_season.year_id >= start, player_season.av != 0))#.join(
+                    #cap_hit, cap_hit.player_season_id == pos_table.player_season_id)
 
         rows = self.sess.execute(stmt).all()
 
         seasons = list(list(zip(*rows))[0])
         labels = list(list(zip(*rows))[1])
+        #salaries = list(list(zip(*rows))[2])
         data = self.get_vectors(seasons)
 
-        return seasons, labels, data
+        return seasons, labels, data, #salaries
 
     def one_player_season(self, poss: str, name, year):
         season_table = player_season_table_switch[poss.upper()]
@@ -58,7 +70,7 @@ class PlayerDataLoader():
         dataset = np.array(dataset)
         zero_cols = np.argwhere(np.all(dataset[..., :] == 0, axis = 0))
         dataset = np.delete(dataset, zero_cols, axis=1)
-        return ((dataset - np.min(dataset, axis=0)) / (np.max(dataset, axis=0) - np.min(dataset, axis=0)))
+        return 2*((dataset - np.min(dataset, axis=0)) / (np.max(dataset, axis=0) - np.min(dataset, axis=0)))-1
 
     def zscore_norm(self, dataset: np.ndarray) -> np.ndarray :
         dataset = np.array(dataset)

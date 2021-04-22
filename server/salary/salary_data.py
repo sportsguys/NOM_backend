@@ -24,7 +24,7 @@ class SalaryDataLoader():
             try:
                 salaries.append(salary[0].hit)
                 good_seasons.append(season)
-                good_scores.append(list(scores.values())[i])
+                good_scores.append(scores[i])
             except:
                 continue
 

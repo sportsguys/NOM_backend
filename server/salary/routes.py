@@ -39,4 +39,4 @@ def fit_salary_curve(position_category):
     print('total time: {}'.format(total_end - total_start))
     return coeffs
 
-#fit_salary_curve('wr')
+fit_salary_curve('qb')
