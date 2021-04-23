@@ -1,8 +1,8 @@
-from db.models import qb, wr, rb, defense, kicker
+from db.models import qb, wr, rb, defense, kicker, player_season
 
-do_not_scrape = ['id', 'metadata', 'player_id', 'player_relationship', 'team_season_id', 'team_season_relationship']
+do_not_scrape = ['id', 'metadata', 'player_id', 'player_relationship', 'player_season_id', 'player_season_relationship', 'team_season_id', 'team_season_relationship']
 
-class Position():
+class RowScraper():
 
     def ping(self, row):
         self.get_all_row_data(row)
@@ -27,25 +27,29 @@ class Position():
                     value = -1
                 setattr(self, attr, value)
 
-""" These all look the same but theyre not """
+""" These all look the same, and pointless, but theyre not the same """
 
-class QB(qb, Position):
+class PlayerSeason(player_season, RowScraper):
+    def __init__(self, player_id):
+        self.player_id = player_id # the foreign key to players
+
+class QB(qb, RowScraper):
     def __init__(self, player_id):
         self.player_id = player_id # the foreign key to players
       
-class WR(wr, Position):
+class WR(wr, RowScraper):
     def __init__(self, player_id):
         self.player_id = player_id # the foreign key to players
 
-class RB(rb, Position):
+class RB(rb, RowScraper):
     def __init__(self, player_id):
         self.player_id = player_id # the foreign key to players
 
-class Defense(defense, Position):
+class Defense(defense, RowScraper):
     def __init__(self, player_id):
         self.player_id = player_id # the foreign key to players
 
-class Kicker(kicker, Position):
+class Kicker(kicker, RowScraper):
     def __init__(self, player_id):
-            self.player_id = player_id # the foreign key to players
+        self.player_id = player_id # the foreign key to players
 
