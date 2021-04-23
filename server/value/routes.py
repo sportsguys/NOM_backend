@@ -46,7 +46,3 @@ def score_position(category_name: str):
 
     dl.save_scores(scores, seasons)
     return scores, seasons, labels
-
-for cat in list(position_map.keys()):
-    if cat != 'OL':
-        score_position(cat)

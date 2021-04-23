@@ -2,7 +2,7 @@ import copy
 import config
 import numpy as np
 from db.constants import position_map
-from db.db import connect_db, get_engine
+from db.db import connect_db, get_engine, get_session
 from db.models import *
 from scraping.player import player_season_table_switch
 from sqlalchemy import and_, select, bindparam, update, insert
@@ -11,10 +11,11 @@ from sqlalchemy.orm.session import sessionmaker
 
 class PlayerDataLoader():
     def __init__(self):
-        #engine = get_engine()
-        self.engine = connect_db(config.dev.DB_URI)
-        Session = sessionmaker(bind=self.engine, autoflush=True)
-        self.sess = Session()
+        self.engine = get_engine()
+        #self.engine = connect_db(config.dev.DB_URI)
+        #Session = sessionmaker(bind=self.engine, autoflush=True)
+        #self.sess = Session()
+        self.sess = get_session()
 
     def get_vectors(self, objlist):
         rows = []

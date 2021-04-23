@@ -49,7 +49,6 @@ def evaluate_team(team_name, year):
 def compare_teams(team_a, team_b, year_a, year_b):
     pass
 
-optimal_dist()
 """
 score position = list of scored players
 find Bcoeff between pos score and label value

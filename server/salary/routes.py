@@ -25,4 +25,3 @@ def fit_salary_curve(position_category):
 
     return coeffs
 
-fit_salary_curve('LB')

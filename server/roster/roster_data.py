@@ -7,10 +7,10 @@ from db.constants import position_map
 
 class RosterDataLoader():
     def __init__(self):
-        #self.db = get_session()
-        engine = connect_db(config.dev.DB_URI)
-        Session = sessionmaker(bind=engine, autoflush=True)
-        self.db = Session()
+        self.db = get_session()
+        #engine = connect_db(config.dev.DB_URI)
+        #Session = sessionmaker(bind=engine, autoflush=True)
+        #self.db = Session()
 
     def team_spending(self, team_name, year):
         cap_hits = self.db.query(cap_hit).filter(

@@ -1,5 +1,5 @@
 import config
-from db.db import connect_db, get_session
+from db.db import connect_db, get_session, get_engine
 from db.models import cap_hit, player_season, score, player
 from db.constants import position_map
 from sqlalchemy import and_, select
@@ -7,8 +7,9 @@ from sqlalchemy.orm.session import sessionmaker
 
 class SalaryDataLoader():
     def __init__(self):
-        #self.db = get_session()
-        self.engine = connect_db(config.dev.DB_URI)
+        self.db = get_session()
+        #self.engine = connect_db(config.dev.DB_URI)
+        self.engine = get_engine()
 
     def get_salaries(self, poss: str):
         for key, value in position_map.items():
