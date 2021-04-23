@@ -127,7 +127,7 @@ def populate():
     #test_player_orm(session)
     #test_player_season_orm(session)
     #test_salary_orm(session)
-    spotrac_salaries(session)
+    #spotrac_salaries(session)
     session.close()
 
 populate()

@@ -39,9 +39,9 @@ class ValueModel():
         n_features = len(self.data[0])
         xy = int(sqrt(10*sqrt(len(self.data))))
         # create SOM and train weights to cluster samples
-        self.som = MiniSom(xy, xy, n_features, sigma=0.4, learning_rate=0.6)
-        self.som.pca_weights_init(self.data)
-        self.som.train(self.data, 10000, verbose=True)
+        self.som = MiniSom(xy, xy, n_features, sigma=0.2, learning_rate=0.3)
+        self.som.random_weights_init(self.data)
+        self.som.train_batch(self.data, 100000, verbose=True)
 
     def save_model(self):
         with open('server/value/maps/' + self.name + '.p', 'wb') as outfile:
@@ -117,8 +117,9 @@ class ValueModel():
         am = self.som.activate(sample)
         score = 0
         for neuron, _ in top_k:
-            ac = am[neuron[0]][neuron[1]]
-            score += (1/ ac)
+            potential = 1/am[neuron[0]][neuron[1]]
+            if potential > score:
+                score = potential
         return score
 
     def scores_bcoeff(self, scores):

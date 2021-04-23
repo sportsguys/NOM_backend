@@ -5,15 +5,15 @@ from db.constants import position_map
 from db.db import connect_db, get_engine
 from db.models import *
 from scraping.player import player_season_table_switch
-from sqlalchemy import and_, select
+from sqlalchemy import and_, select, bindparam, update, insert
 from sqlalchemy.orm.session import sessionmaker
 
 
 class PlayerDataLoader():
     def __init__(self):
         #engine = get_engine()
-        engine = connect_db(config.dev.DB_URI)
-        Session = sessionmaker(bind=engine, autoflush=True)
+        self.engine = connect_db(config.dev.DB_URI)
+        Session = sessionmaker(bind=self.engine, autoflush=True)
         self.sess = Session()
 
     def get_vectors(self, objlist):
@@ -35,14 +35,17 @@ class PlayerDataLoader():
                 positions = value
 
         if role == 'defense':
-            stmt = stmt = select(pos_table, team_season.points_opp).join(
-                    pos_table.player_relationship).filter(player.position.in_(positions)).join(
-                    pos_table.team_season_relationship).join(
-                    pos_table.player_season_relationship).filter(and_(
-                        player_season.year_id >= start, player_season.av != 0))#.join(
+            stmt = (
+                    select(pos_table, team_season.points_opp).
+                    join(pos_table.player_relationship).
+                        filter(player.position.in_(positions)).
+                    join(pos_table.team_season_relationship).
+                    join(pos_table.player_season_relationship).
+                        filter(and_(player_season.year_id >= start, player_season.av != 0))#.join(
                     #cap_hit, cap_hit.player_season_id == pos_table.player_season_id)
+            )
         else:
-            stmt = stmt = select(pos_table, team_season.points).join(
+            stmt = select(pos_table, team_season.points).join(
                     pos_table.player_relationship).filter(player.position.in_(positions)).join(
                     pos_table.team_season_relationship).join(
                     pos_table.player_season_relationship).filter(and_(
@@ -77,3 +80,29 @@ class PlayerDataLoader():
         zero_cols = np.argwhere(np.all(dataset[..., :] == 0, axis = 0))
         dataset = np.delete(dataset, zero_cols, axis=1)
         return (dataset - np.mean(dataset, axis=0)) / np.std(dataset, axis=0)
+
+    def save_scores(self, score_values, seasons):
+        ids = [s.player_season_id for s in seasons]
+        existing_score_ids = self.sess.query(score.player_season_id).filter(score.player_season_id.in_(ids)).all()
+        existing_score_ids = [r.player_season_id for r in existing_score_ids]
+        update_params = []
+        insert_params = []
+
+        for i, season in enumerate(seasons):
+            if season.player_season_id in existing_score_ids:
+                update_params.append({'ps_id': season.player_season_id,'value': score_values[i]})
+            else:
+                insert_params.append({'player_season_id': season.player_season_id,'value': score_values[i],'player_id':season.player_id})
+
+        if update_params:
+            update_stmt = (
+                update(score).
+                where(score.player_season_id == bindparam('ps_id')).
+                values(value = 'value')
+            )
+            with self.engine.begin() as conn:
+                conn.execute(update_stmt,update_params)
+
+        if insert_params:
+            with self.engine.begin() as conn:
+                conn.execute(insert(score), insert_params)
