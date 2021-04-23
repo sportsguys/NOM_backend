@@ -8,9 +8,7 @@ from sqlalchemy.orm.session import sessionmaker
 class SalaryDataLoader():
     def __init__(self):
         #self.db = get_session()
-        engine = connect_db(config.dev.DB_URI)
-        Session = sessionmaker(bind=engine, autoflush=True)
-        self.sess = Session()
+        self.engine = connect_db(config.dev.DB_URI)
 
     def get_salaries(self, poss: str):
         for key, value in position_map.items():
@@ -23,7 +21,8 @@ class SalaryDataLoader():
             join(score.player_relationship).filter(player.position.in_(positions)).
             join(score.player_season_relationship).filter(score.player_season_id == cap_hit.player_season_id)
         )
-        rows = self.sess.execute(stmt).all()
+        with self.engine.begin() as conn:
+            rows = conn.execute(stmt).all()
         if rows:
             salaries = list(list(zip(*rows))[0])
             scores = list(list(zip(*rows))[1])
