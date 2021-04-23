@@ -4,4 +4,4 @@ import server.app as app
 @click.command()
 def start_server():
     subprocess.run(['docker-compose','up','-d'])
-    app.create_app()
+    app.create_app().run()
