@@ -1,13 +1,13 @@
 from scraping.spotrac import CapPage, SpotracTeams
 from scraping.salary import PlayerSalary, PlayerSalaryIndex
 from scraping.team_index import Team, TeamIndex, TeamSeason
-from scraping.player import Player, player_season_table_switch
+from scraping.player import player_season_table_switch, Player
 from scraping.player_index import PlayerIndex
 import config, string
 from db.db import connect_db, init_db
 from sqlalchemy.orm import sessionmaker
-from db.models import team_season
-from sqlalchemy import and_
+from db.models import team_season, player_season, player
+from sqlalchemy import and_, select
 
 def create_player_list():
     letters = list(string.ascii_uppercase)
@@ -25,15 +25,29 @@ def test_player_season_orm(session):
     for guy in guys:
         if guy.position not in player_season_table_switch:
             continue
-        seasons = guy.get_seasons()
-        for season in seasons:
+
+        seasons, statlines = guy.get_seasons()
+        
+        for i, season in enumerate(seasons):
             try:
                 season.team_season_id = session.query(team_season.id).filter(and_(
-                    team_season.team_url == season.team, team_season.year_id == season.year_id)).one().id
+                    team_season.team_url == season.team, team_season.year_id == season.year_id)).one().id    
             except Exception as e:
                 print(e)
                 pass
         session.add_all(seasons)
+        session.commit()
+        for i, statline in enumerate(statlines):
+            try:
+                statline.player_season_id = session.query(player_season).filter(and_(
+                    player_season.team_season_id == seasons[i].team_season_id, player_season.player_id == statline.player_id)).one().id
+
+                statline.team_season_id = session.query(team_season.id).filter(and_(
+                    team_season.team_url == seasons[i].team, team_season.year_id == seasons[i].year_id)).one().id    
+            except Exception as e:
+                print(e)
+                pass
+        session.add_all(statlines)
         session.commit()
 
 def test_player_orm(session):
@@ -84,13 +98,22 @@ def spotrac_salaries(session):
             if team_season_cap_hits is None:
                 continue
             for cap_hit in team_season_cap_hits:
-                cap_hit.team_season_id = session.query(team_season).filter(and_(
-                    team_season.team_url == session.query(Team.url).filter(
-                        Team.team_name == teams[idx].team_name), 
-                    team_season.year_id == year)
-                ).all()[0].id
-                
-            cap_hits.extend(team_season_cap_hits)
+                res = session.execute(select(player_season.id).join_from(
+                    player_season, player).filter(
+                        player.name == cap_hit.name).filter(
+                            player_season.year_id == year)).all()
+                if res:
+                    try:
+                        cap_hit.team_season_id = session.query(team_season).filter(and_(
+                            team_season.team_url == session.query(Team.url).filter(
+                                Team.team_name == teams[idx].team_name), 
+                            team_season.year_id == year)
+                        ).all()[0].id
+                        cap_hit.player_season_id = res[0].id
+                        cap_hits.append(cap_hit)
+                    except Exception as e:
+                        print(e)
+                        continue
     session.add_all(cap_hits)
     session.commit()
 

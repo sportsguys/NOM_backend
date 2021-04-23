@@ -5,23 +5,16 @@ class CashModel():
     def __init__(self, position_category):
         self.position = position_category
 
-    def normalize_salaries(self, salaries, seasons):
+    def normalize_salaries(self, salaries, years):
         normed = []
         for i, salary in enumerate(salaries):
-            #my_guys_years = list(x.year_id for x in seasons
-            #    if x.player_relationship.name == seasons[i].player_relationship.name)
-            year = seasons[i].year_id
-            #years_played = year - min(my_guys_years)
-            #salary -= rm.min_salary(year, years_played)
-
-            ratio = yearly_caps[year] / np.mean(list(yearly_caps.values()))
+            ratio = yearly_caps[years[i]] / np.mean(list(yearly_caps.values()))
             normed.append(salary / ratio)
-
         return normed
 
-    def fit_points(self, proportions, scores, seasons, salaries):
+    def fit_points(self, normed_salaries, scores):
         instances = []
-        for i, proportion in enumerate(proportions):
+        for i, proportion in enumerate(normed_salaries):
             try:
                 instances.append((proportion, scores[i]))
             except:

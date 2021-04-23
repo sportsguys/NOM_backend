@@ -314,9 +314,15 @@ class MiniSom(object):
             random_generator = self._random_generator
         iterations = _build_iteration_indexes(len(data), num_iteration,
                                               verbose, random_generator)
+
+        prev = 0
         for t, iteration in enumerate(iterations):
-            self.update(data[iteration], self.winner(data[iteration]),
-                        t, num_iteration)
+            if t%100 == 0:
+                if abs(self.quantization_error(data) - prev) < 0.00001:
+                    break
+                prev = self.quantization_error(data)                
+            self.update(data[iteration], self.winner(data[iteration]), t, num_iteration)
+
         if verbose:
             print('\n quantization error:', self.quantization_error(data))
 
