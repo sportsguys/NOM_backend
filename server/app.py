@@ -1,5 +1,6 @@
 from flask import Flask
 import config
+import os
 
 def create_app():
     app = Flask(__name__)
@@ -14,4 +15,4 @@ def create_app():
     from server.salary import routes as salary_routes
     app.register_blueprint(salary_routes.bp, url_prefix='/salary')
     
-    return app
+    return app.run(host='0.0.0.0', port=os.getenv('PORT'))

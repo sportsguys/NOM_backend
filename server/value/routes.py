@@ -41,8 +41,12 @@ def score_position(category_name: str):
     scores = np.delete(scores, outliers)
 
     for i, season in enumerate(seasons):
-        scores[i] = scores[i] * season.av
+        if season.av > 2:
+            scores[i] = scores[i] * np.log2(season.av)
 
     dl.save_scores(scores, seasons)
     return scores, seasons, labels
 
+for cat in list(position_map.keys()):
+    if cat != 'OL':
+        score_position(cat)

@@ -12,3 +12,6 @@ services:
     volumes:
       - ./data:/docker-entrypoint-initdb.d
       - ./data:/var/lib/mysql
+  fserv:
+    image: python:3.9
+    

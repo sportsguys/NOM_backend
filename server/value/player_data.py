@@ -83,7 +83,7 @@ class PlayerDataLoader():
 
     def save_scores(self, score_values, seasons):
         ids = [s.player_season_id for s in seasons]
-        existing_score_ids = self.sess.query(score.player_season_id).filter(score.player_season_id.in_(ids)).all()
+        existing_score_ids = self.sess.execute(select(score.player_season_id).filter(score.player_season_id.in_(ids))).all()
         existing_score_ids = [r.player_season_id for r in existing_score_ids]
         update_params = []
         insert_params = []
