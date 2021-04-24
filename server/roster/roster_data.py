@@ -1,7 +1,7 @@
 import config
 from db.db import connect_db, get_session
-from db.models import cap_hit, team, team_season
-from sqlalchemy import and_
+from db.models import cap_hit, team, team_season, player_season, score
+from sqlalchemy import and_, select
 from sqlalchemy.orm.session import sessionmaker
 from db.constants import position_map
 
@@ -41,5 +41,31 @@ class RosterDataLoader():
                         spending[cat] = val
         return spending
 
+    def check_allocation(self, team_name, year):
+        sid_query = (select(team_season.id).filter(and_(team_season.team_url == team_name, team_season.year_id == year)))
+        season_id = self.db.execute(sid_query).one()._data[0]
+        stmt = (
+            select(cap_hit.name, cap_hit.position, cap_hit.hit, score.value).
+                filter(and_(cap_hit.team_season_id == season_id, score.player_season_id == cap_hit.player_season_id))
+        )
+        rows = self.db.execute(stmt).all()
+        sal_totals = {}
+        score_totals = {}
+        for row in rows:
+            for key, val in position_map.items():
+                if row[1] in val:
+                    try:
+                        sal_totals[key] += row[2]
+                        score_totals[key] += row[3]
+                        break
+                    except KeyError:
+                        sal_totals[key] = row[2]
+                        score_totals[key] = row[3]
+                        break
 
+        return sal_totals, score_totals
 
+    
+
+rdl = RosterDataLoader()
+rdl.check_allocation('kan', 2017)

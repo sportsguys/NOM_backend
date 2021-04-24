@@ -17,6 +17,7 @@ class RosterModel():
     def allocate(self, cash, polys):
         polys = np.array(polys)
         salaries = np.zeros(len(polys))
+        scores = np.zeros(len(polys))
         delta = cash / 1000.0
         salaries += 375000
         cash -= 375000*len(salaries)
@@ -27,7 +28,8 @@ class RosterModel():
             old = np.array(list(map(np.polyval, polys, curr_dollar)))
             grad_vals = new - old
             salaries[np.argmax(grad_vals)] += delta
-        return salaries
+            old[np.argmax(old)] += np.max(new)
+        return salaries, old
 
     def min_rookie_salary(self, year):
         return 375000 + (year-2011)*15000
