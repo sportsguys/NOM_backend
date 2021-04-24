@@ -64,7 +64,11 @@ def evaluate_team(team_name, year):
     #Team name must be inserted using 3 character value from url on pfr
     # ie. Kansas City Chiefs - kan
     rdl = RosterDataLoader()
-    return rdl.check_allocation(team_name, year)
+    res = rdl.check_allocation(team_name, year)
+    return res
 
 def compare_teams(team_a, team_b, year_a, year_b):
     pass
+
+#optimal_dist()
+evaluate_team('kan', 2018)

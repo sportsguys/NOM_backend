@@ -22,8 +22,7 @@ def fit_salary_curve(position_category):
 
     normed_salaries = cm.normalize_salaries(salaries, years)
     combined_salaries, combined_scores = cm.depth(normed_salaries, scores, ts_ids)
-    coeffs = cm.fit_points(normed_salaries, scores)
+    coeffs = cm.fit_points(combined_salaries, combined_scores)
 
     return coeffs
-
-fit_salary_curve('LB')
+    

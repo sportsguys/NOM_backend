@@ -14,10 +14,14 @@ class CashModel():
 
     def depth(self, salaries, scores, ts_ids):
         res = {}
-        for ts_id in enumerate(ts_ids):
+        for ts_id in ts_ids:
             res[ts_id] = [0,0]
-
-        return res
+        for i, ts_id in enumerate(ts_ids):
+            res[ts_id][0] += salaries[i]
+            res[ts_id][1] += scores[i]
+        sals = list(list(zip(*res.values())))[0]
+        scores = list(list(zip(*res.values())))[1] 
+        return sals, scores
 
     def fit_points(self, normed_salaries, scores):
         instances = []
