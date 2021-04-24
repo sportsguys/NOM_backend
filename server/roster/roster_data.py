@@ -67,5 +67,3 @@ class RosterDataLoader():
 
     
 
-rdl = RosterDataLoader()
-rdl.check_allocation('kan', 2017)
