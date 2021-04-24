@@ -15,7 +15,7 @@ def optimal_dist_endpoint():
         "allocations": dist,
         "scores": scores
     }
-    jsonified = json.dumps(total)
+    jsonified = jsonify(total)
     return jsonified
 
 @bp.route('/eval_team', methods=['GET'])
@@ -27,7 +27,7 @@ def eval_endpoint():
         "allocations": sal_totals,
         "scores": score_totals
     }
-    jsonified = json.dumps(total)
+    jsonified = jsonify(total)
     return jsonified
 
 @bp.route('compare_teams', methods=['GET'])
