@@ -28,7 +28,7 @@ class RosterModel():
             old = np.array(list(map(np.polyval, polys, curr_dollar)))
             grad_vals = new - old
             salaries[np.argmax(grad_vals)] += delta
-            old[np.argmax(old)] += np.max(new)
+            old[np.argmax(new)] += np.max(new)
         return salaries, old
 
     def min_rookie_salary(self, year):

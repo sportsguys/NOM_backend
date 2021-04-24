@@ -10,9 +10,6 @@ bp = Blueprint("roster_model", __name__)
 
 @bp.route('/optimal', methods=['GET'])
 def optimal_dist_endpoint():
-<<<<<<< HEAD
-    return jsonify(optimal_dist())
-=======
     dist, scores = optimal_dist()
     total = {
         "allocations": dist,
@@ -20,7 +17,6 @@ def optimal_dist_endpoint():
     }
     jsonified = json.dumps(total)
     return jsonified
->>>>>>> newNorms
 
 @bp.route('/eval_team', methods=['GET'])
 def eval_endpoint():
@@ -61,12 +57,8 @@ def optimal_dist():
         optimal[key] = allocations[i]
         op_scores[key] = scores[i]
     optimal['OL'] = ol_cash
-<<<<<<< HEAD
-    return optimal
-=======
-    op_scores['OL'] = 0
+    op_scores['OL'] = "Unknown"
     return optimal, op_scores
->>>>>>> newNorms
 
 def evaluate_team(team_name, year):
     #Team name must be inserted using 3 character value from url on pfr
@@ -76,13 +68,3 @@ def evaluate_team(team_name, year):
 
 def compare_teams(team_a, team_b, year_a, year_b):
     pass
-
-<<<<<<< HEAD
-=======
-print(eval_endpoint())
->>>>>>> newNorms
-"""
-score position = list of scored players
-find Bcoeff between pos score and label value
-model relationship between label and B_pos * log(salary)
-"""
