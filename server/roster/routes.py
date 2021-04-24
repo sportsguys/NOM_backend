@@ -3,18 +3,32 @@ from flask.globals import request
 from server.roster.roster import RosterModel
 from db.constants import position_map
 from server.salary.routes import fit_salary_curve
+from server.roster.roster_data import RosterDataLoader
+import json
 
 bp = Blueprint("roster_model", __name__)
 
 @bp.route('/optimal', methods=['GET'])
 def optimal_dist_endpoint():
-    return jsonify(optimal_dist())
+    dist, scores = optimal_dist()
+    total = {
+        "allocations": dist,
+        "scores": scores
+    }
+    jsonified = jsonify(total)
+    return jsonified
 
 @bp.route('/eval_team', methods=['GET'])
 def eval_endpoint():
     team = request.args.get('team')
     year = request.args.get('year')
-    return evaluate_team(team, year)
+    sal_totals, score_totals = evaluate_team(team, year)
+    total = {
+        "allocations": sal_totals,
+        "scores": score_totals
+    }
+    jsonified = jsonify(total)
+    return jsonified
 
 @bp.route('compare_teams', methods=['GET'])
 def compare_endpoint():
@@ -36,21 +50,21 @@ def optimal_dist():
     cash = rm.remaining_cash()
     ol_cash = cash / 4.0
     cash *= 0.75 #OL gets 0.25
-    allocations = rm.allocate(cash, list(curves.values()))
+    allocations, scores = rm.allocate(cash, list(curves.values()))
     optimal = {}
+    op_scores = {}
     for i, (key, value) in enumerate(curves.items()):
         optimal[key] = allocations[i]
+        op_scores[key] = scores[i]
     optimal['OL'] = ol_cash
-    return optimal
+    op_scores['OL'] = "Unknown"
+    return optimal, op_scores
 
 def evaluate_team(team_name, year):
-    pass
+    #Team name must be inserted using 3 character value from url on pfr
+    # ie. Kansas City Chiefs - kan
+    rdl = RosterDataLoader()
+    return rdl.check_allocation(team_name, year)
 
 def compare_teams(team_a, team_b, year_a, year_b):
     pass
-
-"""
-score position = list of scored players
-find Bcoeff between pos score and label value
-model relationship between label and B_pos * log(salary)
-"""
