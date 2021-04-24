@@ -14,13 +14,14 @@ def fit_salary_curve(position_category):
     dl = SalaryDataLoader()
 
     try:
-        salaries, scores, seasons = dl.get_salaries(position_category)
+        salaries, scores, years, ts_ids = dl.get_salaries(position_category)
     except RuntimeError:
         print("Position not yet scored")
         score_position(position_category)
-        salaries, scores, seasons = dl.get_salaries(position_category)
+        salaries, scores, years, ts_ids = dl.get_salaries(position_category)
 
-    normed_salaries = cm.normalize_salaries(salaries, seasons)
+    normed_salaries = cm.normalize_salaries(salaries, years)
+    combined_salaries, combined_scores = cm.depth(normed_salaries, scores, ts_ids)
     coeffs = cm.fit_points(normed_salaries, scores)
 
     return coeffs

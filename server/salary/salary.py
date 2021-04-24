@@ -12,6 +12,13 @@ class CashModel():
             normed.append(salary / ratio)
         return normed
 
+    def depth(self, salaries, scores, ts_ids):
+        res = {}
+        for ts_id in enumerate(ts_ids):
+            res[ts_id] = [0,0]
+
+        return res
+
     def fit_points(self, normed_salaries, scores):
         instances = []
         for i, proportion in enumerate(normed_salaries):
