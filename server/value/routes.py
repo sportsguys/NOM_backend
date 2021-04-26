@@ -31,7 +31,7 @@ def score_position(category_name: str):
         vm.save_model()
     
     scores = vm.score_set_dist(data_normed, 4, role)
-    outliers = np.where(scores-np.mean(scores) > 15*np.std(scores))
+    outliers = np.where(scores-np.mean(scores) > 8*np.std(scores))
     outliers = np.append(outliers, np.where(np.isinf(scores)))
     if max(scores) == math.inf:
         if np.argmax(scores) not in outliers:
@@ -41,8 +41,9 @@ def score_position(category_name: str):
     scores = np.delete(scores, outliers)
 
     for i, season in enumerate(seasons):
-        if season.av > 2:
-            scores[i] = scores[i] * np.log2(season.av)
+        if season.av > 1:
+            scores[i] = scores[i] * (season.av)
+            pass
 
     dl.save_scores(scores, seasons)
     return scores, seasons, labels

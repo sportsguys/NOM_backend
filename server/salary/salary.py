@@ -1,5 +1,6 @@
 import numpy as np
 from db.constants import yearly_caps
+import matplotlib.pyplot as plt 
 
 class CashModel():
     def __init__(self, position_category):

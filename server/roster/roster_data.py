@@ -58,14 +58,11 @@ class RosterDataLoader():
                 if row[1] in val:
                     try:
                         sal_totals[key] += row[2]
-                        if row[4] > 2:
-                            score_totals [key] += (row[3] * np.log2(row[4]))
-                        else:
-                            score_totals[key] += row[3]
-                        break
+                        score_totals[key] += row[3]
                     except KeyError:
                         sal_totals[key] = row[2]
                         score_totals[key] = row[3]
+                    finally:
                         break
 
         return sal_totals, score_totals
