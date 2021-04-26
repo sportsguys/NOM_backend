@@ -14,10 +14,5 @@ setup(
         'html5lib==1.1',
         'requests==2.25.1',
         'bs4'
-    ],
-    entry_points={
-        "console_scripts": [
-            "startserver=cli:start_server"
-        ],
-    }
+    ]
 )

@@ -44,7 +44,7 @@ class RosterDataLoader():
 
     def check_allocation(self, team_name, year):
         sid_query = (select(team_season.id).filter(and_(team_season.team_url == team_name, team_season.year_id == year)))
-        season_id = self.db.execute(sid_query).one()._data[0]
+        season_id = self.db.execute(sid_query).all()[0]._data[0]
         stmt = (
             select(cap_hit.name, cap_hit.position, cap_hit.hit, score.value, player_season.av).
                 filter(and_(cap_hit.team_season_id == season_id, score.player_season_id == cap_hit.player_season_id)).
