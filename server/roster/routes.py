@@ -42,10 +42,12 @@ def compare_endpoint():
 
 def optimal_dist():
     curves = {}
-    for position in position_map.keys():
+    beta_coeffs = []
+    for i, position in enumerate(position_map.keys()):
         if position == 'OL':
             continue
-        curves[position] = fit_salary_curve(position)
+        curves[position], bc = fit_salary_curve(position)
+        beta_coeffs.append(bc)
     rm = RosterModel()
     cash = rm.remaining_cash()
     ol_cash = cash / 4.0
@@ -54,8 +56,8 @@ def optimal_dist():
     optimal = {}
     op_scores = {}
     for i, (key, value) in enumerate(curves.items()):
-        optimal[key] = allocations[i]
-        op_scores[key] = scores[i]
+        optimal[key] = allocations[i] 
+        op_scores[key] = scores[i] / beta_coeffs[i]
     optimal['OL'] = ol_cash
     op_scores['OL'] = "Unknown"
     return optimal, op_scores
@@ -70,5 +72,5 @@ def evaluate_team(team_name, year):
 def compare_teams(team_a, team_b, year_a, year_b):
     pass
 
-optimal_dist()
+#optimal_dist()
 #evaluate_team('oti', 2018)
