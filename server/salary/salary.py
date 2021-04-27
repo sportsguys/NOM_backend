@@ -1,6 +1,5 @@
 import numpy as np
 from db.constants import yearly_caps
-import matplotlib.pyplot as plt 
 
 class CashModel():
     def __init__(self, position_category):
@@ -25,20 +24,11 @@ class CashModel():
         return sals, scores
 
     def fit_points(self, normed_salaries, scores):
-        instances = []
-        for i, proportion in enumerate(normed_salaries):
-            try:
-                instances.append((proportion, scores[i]))
-            except:
-                continue
-
-        instances = sorted(instances, key=lambda x: x[0], reverse=True)
-        prop_data = np.array(instances)
-        xax = prop_data[:,0]
-        lax = np.log2(xax)
-        yax = prop_data[:,1]
+        #xax = normed_salaries[:,0]
+        lax = np.log2(normed_salaries)
+        yax = np.array(scores)
         yax = np.delete(yax, np.where(lax<=0))
-        xax = np.delete(xax, np.where(lax<=0))
+        #xax = np.delete(xax, np.where(lax<=0))
         lax = np.delete(lax, np.where(lax<=0))
-        coeffs = np.polyfit(lax, yax, 3)
+        coeffs = np.polyfit(lax, yax, 4)
         return coeffs
