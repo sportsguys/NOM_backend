@@ -16,20 +16,19 @@ class RosterModel():
 
     def allocate(self, cash, polys):
         polys = np.array(polys)
-        salaries = np.zeros(len(polys))
+        salaries = []
+        for key, value in self.min_cap_dist().items():
+            salaries.append(value)
         scores = np.zeros(len(polys))
         delta = cash / 1000.0
-        salaries += 375000
-        cash -= 375000*len(salaries)
+        scores = np.array(list(map(np.polyval, polys, np.log2(salaries))))
         for dont_loop_a_hundred_million_times in range(1,1000):
-            next_dollar = np.log2(salaries+delta)
-            curr_dollar = np.log2(salaries)
-            new = np.array(list(map(np.polyval, polys, next_dollar)))
-            old = np.array(list(map(np.polyval, polys, curr_dollar)))
+            new = np.array(list(map(np.polyval, polys, np.log2(salaries+delta))))
+            old = np.array(list(map(np.polyval, polys, np.log2(salaries))))
             grad_vals = new - old
             salaries[np.argmax(grad_vals)] += delta
-            old[np.argmax(new)] += np.max(new)
-        return salaries, old
+            scores[np.argmax(grad_vals)] += np.max(grad_vals)
+        return salaries, scores
 
     def min_rookie_salary(self, year):
         return 375000 + (year-2011)*15000

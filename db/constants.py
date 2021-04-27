@@ -16,7 +16,7 @@ min_roster_dist = {
     'RB': 4,
     'TE': 3,
     'WR': 5,
-    'OL': 8,
+    #'OL': 8,
     'DL': 8,
     'LB': 7,
     'DB': 9,

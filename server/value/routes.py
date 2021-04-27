@@ -18,6 +18,7 @@ def score_position(category_name: str):
     for key, value in roles.items():
         if category_name.upper() in value:
             role = key
+            break
 
     dl = PlayerDataLoader()
     seasons, labels, data = dl.create_dataset(category_name, 2007, 2020, role)
@@ -41,8 +42,10 @@ def score_position(category_name: str):
     scores = np.delete(scores, outliers)
 
     for i, season in enumerate(seasons):
-        if season.av > 2:
-            scores[i] = scores[i] * np.log2(season.av)
+        if season.av > 1:
+            scores[i] = scores[i] * (season.av)
+            pass
 
     dl.save_scores(scores, seasons)
     return scores, seasons, labels
+

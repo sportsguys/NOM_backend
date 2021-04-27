@@ -4,6 +4,7 @@ from db.models import cap_hit, team, team_season, player_season, score
 from sqlalchemy import and_, select
 from sqlalchemy.orm.session import sessionmaker
 from db.constants import position_map
+import numpy as np
 
 class RosterDataLoader():
     def __init__(self):
@@ -43,10 +44,11 @@ class RosterDataLoader():
 
     def check_allocation(self, team_name, year):
         sid_query = (select(team_season.id).filter(and_(team_season.team_url == team_name, team_season.year_id == year)))
-        season_id = self.db.execute(sid_query).one()._data[0]
+        season_id = self.db.execute(sid_query).all()[0]._data[0]
         stmt = (
-            select(cap_hit.name, cap_hit.position, cap_hit.hit, score.value).
-                filter(and_(cap_hit.team_season_id == season_id, score.player_season_id == cap_hit.player_season_id))
+            select(cap_hit.name, cap_hit.position, cap_hit.hit, score.value, player_season.av).
+                filter(and_(cap_hit.team_season_id == season_id, score.player_season_id == cap_hit.player_season_id)).
+                join(cap_hit.player_season_relationship)
         )
         rows = self.db.execute(stmt).all()
         sal_totals = {}
@@ -57,10 +59,10 @@ class RosterDataLoader():
                     try:
                         sal_totals[key] += row[2]
                         score_totals[key] += row[3]
-                        break
                     except KeyError:
                         sal_totals[key] = row[2]
                         score_totals[key] = row[3]
+                    finally:
                         break
 
         return sal_totals, score_totals
