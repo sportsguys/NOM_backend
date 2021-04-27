@@ -18,6 +18,7 @@ def score_position(category_name: str):
     for key, value in roles.items():
         if category_name.upper() in value:
             role = key
+            break
 
     dl = PlayerDataLoader()
     seasons, labels, data = dl.create_dataset(category_name, 2007, 2020, role)
@@ -31,7 +32,7 @@ def score_position(category_name: str):
         vm.save_model()
     
     scores = vm.score_set_dist(data_normed, 4, role)
-    outliers = np.where(scores-np.mean(scores) > 8*np.std(scores))
+    outliers = np.where(scores-np.mean(scores) > 4*np.std(scores))
     outliers = np.append(outliers, np.where(np.isinf(scores)))
     if max(scores) == math.inf:
         if np.argmax(scores) not in outliers:

@@ -70,5 +70,5 @@ def evaluate_team(team_name, year):
 def compare_teams(team_a, team_b, year_a, year_b):
     pass
 
-#ptimal_dist()
+optimal_dist()
 #evaluate_team('oti', 2018)
