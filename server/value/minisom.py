@@ -85,7 +85,7 @@ def asymptotic_decay(learning_rate, t, max_iter):
 class MiniSom(object):
     def __init__(self, x, y, input_len, sigma=1.0, learning_rate=0.5,
                  decay_function=asymptotic_decay,
-                 neighborhood_function='gaussian', topology='rectangular',
+                 neighborhood_function='gaussian',
                  activation_distance='euclidean', random_seed=None):
         """Initializes a Self Organizing Maps.
         A rule of thumb to set the size of the grid for a dimensionality
@@ -124,9 +124,6 @@ class MiniSom(object):
         neighborhood_function : string, optional (default='gaussian')
             Function that weights the neighborhood of a position in the map.
             Possible values: 'gaussian', 'mexican_hat', 'bubble', 'triangle'
-        topology : string, optional (default='rectangular')
-            Topology of the map.
-            Possible values: 'rectangular', 'hexagonal'
         activation_distance : string, optional (default='euclidean')
             Distance used to activate the map.
             Possible values: 'euclidean', 'cosine', 'manhattan', 'chebyshev'
@@ -149,25 +146,13 @@ class MiniSom(object):
         self._neigx = arange(x)
         self._neigy = arange(y)  # used to evaluate the neighborhood function
 
-        if topology not in ['hexagonal', 'rectangular']:
-            msg = '%s not supported only hexagonal and rectangular available'
-            raise ValueError(msg % topology)
-        self.topology = topology
         self._xx, self._yy = meshgrid(self._neigx, self._neigy)
         self._xx = self._xx.astype(float)
         self._yy = self._yy.astype(float)
-        if topology == 'hexagonal':
-            self._xx[::-2] -= 0.5
-            if neighborhood_function in ['triangle']:
-                warn('triangle neighborhood function does not ' +
-                     'take in account hexagonal topology')
 
         self._decay_function = decay_function
 
-        neig_functions = {'gaussian': self._gaussian,
-                          'mexican_hat': self._mexican_hat,
-                          'bubble': self._bubble,
-                          'triangle': self._triangle}
+        neig_functions = {'gaussian': self._gaussian}
 
         if neighborhood_function not in neig_functions:
             msg = '%s not supported. Functions available: %s'
@@ -182,10 +167,7 @@ class MiniSom(object):
 
         self.neighborhood = neig_functions[neighborhood_function]
 
-        distance_functions = {'euclidean': self._euclidean_distance,
-                              'cosine': self._cosine_distance,
-                              'manhattan': self._manhattan_distance,
-                              'chebyshev': self._chebyshev_distance}
+        distance_functions = {'euclidean': self._euclidean_distance}
 
         if activation_distance not in distance_functions:
             msg = '%s not supported. Distances available: %s'
@@ -198,22 +180,6 @@ class MiniSom(object):
         """Returns the weights of the neural network."""
         return self._weights
 
-    def get_euclidean_coordinates(self):
-        """Returns the position of the neurons on an euclidean
-        plane that reflects the chosen topology in two meshgrids xx and yy.
-        Neuron with map coordinates (1, 4) has coordinate (xx[1, 4], yy[1, 4])
-        in the euclidean plane.
-        Only useful if the topology chosen is not rectangular.
-        """
-        return self._xx.T, self._yy.T
-
-    def convert_map_to_euclidean(self, xy):
-        """Converts map coordinates into euclidean coordinates
-        that reflects the chosen topology.
-        Only useful if the topology chosen is not rectangular.
-        """
-        return self._xx.T[xy], self._yy.T[xy]
-
     def _activate(self, x):
         """Updates matrix activation_map, in this matrix
            the element i,j is the response of the neuron i,j to x."""
@@ -224,6 +190,12 @@ class MiniSom(object):
         self._activate(x)
         return self._activation_map
 
+    def nd_gaussian(self, c, sigma):
+        d = 2*pi*sigma*sigma
+        winner_activation_map = self._manhattan_distance(self._weights[c], self._weights)
+        a = exp(-power(winner_activation_map, 2)/d)
+        return a
+
     def _gaussian(self, c, sigma):
         """Returns a Gaussian centered in c."""
         d = 2*pi*sigma*sigma
@@ -231,43 +203,11 @@ class MiniSom(object):
         ay = exp(-power(self._yy-self._yy.T[c], 2)/d)
         return (ax * ay).T  # the external product gives a matrix
 
-    def _mexican_hat(self, c, sigma):
-        """Mexican hat centered in c."""
-        p = power(self._xx-self._xx.T[c], 2) + power(self._yy-self._yy.T[c], 2)
-        d = 2*pi*sigma*sigma
-        return (exp(-p/d)*(1-2/d*p)).T
-
-    def _bubble(self, c, sigma):
-        """Constant function centered in c with spread sigma.
-        sigma should be an odd value.
-        """
-        ax = logical_and(self._neigx > c[0]-sigma,
-                         self._neigx < c[0]+sigma)
-        ay = logical_and(self._neigy > c[1]-sigma,
-                         self._neigy < c[1]+sigma)
-        return outer(ax, ay)*1.
-
-    def _triangle(self, c, sigma):
-        """Triangular function centered in c with spread sigma."""
-        triangle_x = (-abs(c[0] - self._neigx)) + sigma
-        triangle_y = (-abs(c[1] - self._neigy)) + sigma
-        triangle_x[triangle_x < 0] = 0.
-        triangle_y[triangle_y < 0] = 0.
-        return outer(triangle_x, triangle_y)
-
-    def _cosine_distance(self, x, w):
-        num = (w * x).sum(axis=2)
-        denum = multiply(linalg.norm(w, axis=2), linalg.norm(x))
-        return 1 - num / (denum+1e-8)
-
     def _euclidean_distance(self, x, w):
         return linalg.norm(subtract(x, w), axis=-1)
 
     def _manhattan_distance(self, x, w):
         return linalg.norm(subtract(x, w), ord=1, axis=-1)
-
-    def _chebyshev_distance(self, x, w):
-        return max(subtract(x, w), axis=-1)
 
     def _check_iteration_number(self, num_iteration):
         if num_iteration < 1:
@@ -303,10 +243,15 @@ class MiniSom(object):
         eta = self._decay_function(self._learning_rate, t, max_iteration)
         # sigma and learning rate decrease with the same rule
         sig = self._decay_function(self._sigma, t, max_iteration)
-        # improves the performances
+
         g = self.neighborhood(win, sig)*eta
+        ng = self.nd_gaussian(win, sig)*eta
+
         # w_new = eta * neighborhood_function * (x-w)
-        self._weights += einsum('ij, ijk->ijk', g, x-self._weights)
+        delta  = einsum('ij, ijk->ijk', ng, x-self._weights)
+        # if t % 1000 == 0 or t==max_iteration:
+        #     print('pausing')
+        self._weights += delta
 
     def quantization(self, data):
         """Assigns a code book (weights vector of the winning neuron)
@@ -369,9 +314,15 @@ class MiniSom(object):
             random_generator = self._random_generator
         iterations = _build_iteration_indexes(len(data), num_iteration,
                                               verbose, random_generator)
+
+        prev = 0
         for t, iteration in enumerate(iterations):
-            self.update(data[iteration], self.winner(data[iteration]),
-                        t, num_iteration)
+            if t%100 == 0:
+                if abs(self.quantization_error(data) - prev) < 0.00001:
+                    break
+                prev = self.quantization_error(data)                
+            self.update(data[iteration], self.winner(data[iteration]), t, num_iteration)
+
         if verbose:
             print('\n quantization error:', self.quantization_error(data))
 
@@ -403,34 +354,6 @@ class MiniSom(object):
         """
         self.train(data, num_iteration, random_order=False, verbose=verbose)
 
-    def distance_map(self):
-        """Returns the distance map of the weights.
-        Each cell is the normalised sum of the distances between
-        a neuron and its neighbours. Note that this method uses
-        the euclidean distance."""
-        um = zeros((self._weights.shape[0],
-                    self._weights.shape[1],
-                    8))  # 2 spots more for hexagonal topology
-
-        ii = [[0, -1, -1, -1, 0, 1, 1, 1]]*2
-        jj = [[-1, -1, 0, 1, 1, 1, 0, -1]]*2
-
-        if self.topology == 'hexagonal':
-            ii = [[1, 1, 1, 0, -1, 0], [0, 1, 0, -1, -1, -1]]
-            jj = [[1, 0, -1, -1, 0, 1], [1, 0, -1, -1, 0, 1]]
-
-        for x in range(self._weights.shape[0]):
-            for y in range(self._weights.shape[1]):
-                w_2 = self._weights[x, y]
-                e = y % 2 == 0   # only used on hexagonal topology
-                for k, (i, j) in enumerate(zip(ii[e], jj[e])):
-                    if (x+i >= 0 and x+i < self._weights.shape[0] and
-                            y+j >= 0 and y+j < self._weights.shape[1]):
-                        w_1 = self._weights[x+i, y+j]
-                        um[x, y, k] = fast_norm(w_2-w_1)
-
-        um = um.sum(axis=2)
-        return um/um.max()
 
     def activation_response(self, data):
         """
@@ -459,33 +382,6 @@ class MiniSom(object):
         distance between each input sample and its best matching unit."""
         self._check_input_len(data)
         return norm(data-self.quantization(data), axis=1).mean()
-
-    def topographic_error(self, data):
-        """Returns the topographic error computed by finding
-        the best-matching and second-best-matching neuron in the map
-        for each input and then evaluating the positions.
-        A sample for which these two nodes are not adjacent counts as
-        an error. The topographic error is given by the
-        the total number of errors divided by the total of samples.
-        If the topographic error is 0, no error occurred.
-        If 1, the topology was not preserved for any of the samples."""
-        self._check_input_len(data)
-        if self.topology == 'hexagonal':
-            msg = 'Topographic error not implemented for hexagonal topology.'
-            raise NotImplementedError(msg)
-        total_neurons = prod(self._activation_map.shape)
-        if total_neurons == 1:
-            warn('The topographic error is not defined for a 1-by-1 map.')
-            return nan
-
-        t = 1.42
-        # b2mu: best 2 matching units
-        b2mu_inds = argsort(self._distance_from_weights(data), axis=1)[:, :2]
-        b2my_xy = unravel_index(b2mu_inds, self._weights.shape[:2])
-        b2mu_x, b2mu_y = b2my_xy[0], b2my_xy[1]
-        dxdy = hstack([diff(b2mu_x), diff(b2mu_y)])
-        distance = norm(dxdy, axis=1)
-        return (distance > t).mean()
 
     def win_map(self, data, return_indices=False):
         """Returns a dictionary wm where wm[(i,j)] is a list with:

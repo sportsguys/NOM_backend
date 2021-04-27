@@ -1,3 +1,4 @@
+from math import sqrt
 from server.value.minisom import MiniSom
 import numpy as np
 import pickle
@@ -9,11 +10,12 @@ def _get_indices_of_k_smallest(arr, k):
     """
     return tuple(np.array(np.unravel_index(np.argpartition(arr.ravel(), k), 
         arr.shape))[:, range(min(k, 0), max(k, 0))])
+
 class ValueModel():
     def __init__(self, name='test', data=None, labels=None):
         self.name = name
         self.som = None
-        self.dataset = data # not yet normalized for training
+        self.data = data
         self.labels = labels
 
     def gen_test_data(self):
@@ -23,62 +25,61 @@ class ValueModel():
 
             Returns tuple of lists data, labels
         """
-        p=np.random.randint(low=1, high=10, size=(1,50))
-        p = p / p.sum(axis=1, keepdims=1)
+        probability_table = np.random.randint(low=1, high=10, size=(1,50))
+        probability_table = probability_table / probability_table.sum(axis=1, keepdims=1)
         data = []
         labels = []
-        for i in range (100):
-            sample = np.random.choice(50, 10, replace=False, p=p[0])
+        for iter in range (100):
+            sample = np.random.choice(50, 10, replace=False, p=probability_table[0])
             data.append(sample)
             labels.append(np.sum(sample))
-        self.dataset, self.labels = data, labels
-
-    def feature_normalize(self):
-        """ normalize feature vectors in the dataset to contain 
-            values [0,1] based on mean and standard deviation
-            
-            self.dataset and self.data are separate to allow for other normalization techniques 
-        """
-        self.data = (self.dataset - np.mean(self.dataset, axis=0)) / np.std(self.dataset, axis=0)
+        return data, labels
 
     def train_model(self):
         n_features = len(self.data[0])
+        xy = int(sqrt(10*sqrt(len(self.data))))
         # create SOM and train weights to cluster samples
-        self.som = MiniSom(10, 10, n_features, sigma=.4, learning_rate=.6,
-                    neighborhood_function='gaussian', random_seed=10)
-        self.som.pca_weights_init(self.data)
-        self.som.train(self.data, 100)
+        self.som = MiniSom(xy, xy, n_features, sigma=0.2, learning_rate=0.3)
+        self.som.random_weights_init(self.data)
+        self.som.train_batch(self.data, 100000, verbose=True)
 
     def save_model(self):
-        with open(self.name + '.p', 'wb') as outfile:
-            pickle.dump(self.som, outfile)
+        with open('server/value/maps/' + self.name + '.p', 'wb') as outfile:
+            pickle.dump(self, outfile)
 
     def load_model(self, name):
         if name:
             try:
-                with open(name + '.p', 'rb') as infile:
-                    self.som = pickle.load(infile)
-            except:
+                with open('server/value/maps/' + name + '.p', 'rb') as infile:
+                    return pickle.load(infile)
+            except Exception as e:
                 print('could not load model {}'.format(name))
+                raise(e)
 
-    def score_avg_neighborhood(self):
-        """ Assign scores to samples based on average score of closest 3 neurons.
-
-            Return list of scores with the same shape as and corresponding to data
-        """
-        scores = np.zeros(len(self.data))
+    def score_set_avg(self, data, k):
         lm = self.som.labels_map(self.data, self.labels)
-        for i, sample in enumerate(self.data):
-            activation_map = self.som.activate(sample)
-            cls = _get_indices_of_k_smallest(activation_map, 3)
-            for j, x in enumerate(cls[0]):
-                neuron = (x, cls[1][j])
-                n_scores = lm[neuron]
-                if n_scores:
-                    for k, score in enumerate(n_scores):
-                        scores[i] += score
-                        scores[i] /= k+1
-        return scores.tolist()
+        scores = []
+        for sample in data:
+            scores.append(self.score_one_avg(sample, k, lm))
+        return scores
+
+    def score_one_avg(self, sample, k, lm):
+        """ score sample according to average value of the
+            samples centroids plus k-1 closest neurons
+        """
+        am = self.som.activate(sample)
+        cls = _get_indices_of_k_smallest(am, k)
+        total = 0
+        num = 1
+        for i, x in enumerate(cls[0]):
+            neuron = (x, cls[1][i])
+            nscores = lm[neuron]
+            if nscores:
+                for k, score in enumerate(nscores):
+                    total += score
+                num += k+1
+        total /= num
+        return total
 
     def _k_greatest_neurons(self, lm, k):
         winners = []
@@ -89,19 +90,37 @@ class ValueModel():
                 winners.pop(0)
         return winners
 
-    def score_dist_from_greatest_k(self, k=5):
-        """ Assign scores to samples based on distance from neurons containting the 
-            k greatest scores. 
+    def _k_least_neurons(self, lm, k):
+        winners = []
+        for position, p_scores in lm.items():
+            winners.append((position, np.min(p_scores)))
+            if len(winners) > k:
+                winners.sort(key=lambda kv: kv[1], reverse=True)
+                winners.pop(0)
+        return winners
 
-            Return list of scores with the same shape as and corresponding to data\n
-        """
-        scores = np.zeros(len(self.data))
+    def score_set_dist(self, data, k, role):
         lm = self.som.labels_map(self.data, self.labels)
-        winners = self._k_greatest_neurons(lm, k)
-        for i, sample in enumerate(self.data):
-            am = self.som.activate(sample)
-            for neuron, _ in winners:
-                # neuron is a centroid coordinate
-                scores[i] += (1 / am[neuron[0]][neuron[1]]) 
-                # lower activation value = closer to neuron. using 1 might be arbitrary
+        if role == 'offense' or role == 'kicker':
+            top_k = self._k_greatest_neurons(lm, k)
+        elif role == 'defense':
+            top_k = self._k_least_neurons(lm, k)
+        scores = []
+        for sample in data:
+            scores.append(self.score_one_dist(sample, top_k))
         return scores
+
+    def score_one_dist(self, sample, top_k):
+        """ score sample according to distance 
+            from neurons containing k greatest labels 
+        """
+        am = self.som.activate(sample)
+        score = 0
+        for neuron, _ in top_k:
+            potential = 1/am[neuron[0]][neuron[1]]
+            if potential > score:
+                score = potential
+        return score
+
+    def scores_bcoeff(self, scores):
+        self.labels

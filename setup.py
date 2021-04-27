@@ -6,16 +6,13 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'flask',
-        'sqlalchemy',
-        'Click',
-        'pymysql',
-        'numpy',
-        'html5lib'
-    ],
-    entry_points={
-        "console_scripts": [
-            "startserver=cli:start_server"
-        ],
-    }
+        'flask==1.1.2',
+        'sqlalchemy==1.4.8',
+        'Click==7.1.2',
+        'pymysql==1.0.2',
+        'numpy==1.19.4',
+        'html5lib==1.1',
+        'requests==2.25.1',
+        'bs4'
+    ]
 )
