@@ -31,4 +31,4 @@ def fit_salary_curve(position_category):
     combined_salaries, combined_scores = cm.depth(normed_salaries, scores, ts_ids)
     coeffs = cm.fit_points(combined_salaries, combined_scores, beta_coeff)
 
-    return coeffs
+    return coeffs, beta_coeff
